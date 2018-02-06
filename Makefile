@@ -6,15 +6,15 @@
 #    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/06 08:52:22 by skushnir         ###   ########.fr        #
+#    Updated: 2018/02/06 12:00:38 by skushnir         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
-SRC =  
+SRC = rtv1.c utility.c
 
-HDR = fractol.h
+HDR = rtv1.h
 
 LIB = libft/libft.a minilibx/libmlx.a
 
