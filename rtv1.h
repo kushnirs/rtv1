@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/06 13:52:50 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/09 19:13:43 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@
 # include "libft/printf/ft_printf.h"
 
 # define DEVICE_TYPE CL_DEVICE_TYPE_CPU
-# define MAX_SIZE 2147483647
-# define HIGH	1300
-# define WIDTH	2000
+# define MAX_SIZE 214748367
+# define HIGH	1000
+# define WIDTH	1000
 # define B_A	0
 # define B_W	13
 # define B_D	2
@@ -66,7 +66,15 @@ typedef struct			s_sphere
 	t_point				center;
 	double				radius;
 	int					color;
+	int				specular;
 }						t_sphere;
+
+typedef struct			s_light
+{
+	char				type[15];
+	double				intensity;
+	t_point				direction;
+}						t_light;
 
 typedef struct			s_mlx
 {
@@ -85,10 +93,14 @@ typedef struct			s_mlx
 	t_host				host;
 }						t_mlx;
 
-t_ui					parse_color(int c1, int c2, double t);
+int						parse_color(int c1, int c2, double t);
 t_ui					parse_color_2(int c1, t_ui t);
 t_point					canvastoviewport(t_point point, t_mlx *data);
-double					scalar(t_point *a, t_point *b);
+double					vector_scalar(t_point *a, t_point *b);
+t_point					vector_substr(t_point *a, t_point *b);
+t_point					vector_addition(t_point *a, t_point *b);
+t_point					vector_mult(t_point *a, double num);
+double					vector_length(t_point *a);
 int						key_action(int key, t_mlx *data);
 int						mouse_menu(int button, int x, int y, t_mlx *data);
 

@@ -3,22 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utility.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/06 13:54:17 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/09 19:48:55 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "rtv1.h"
-
-double	scalar(t_point *a, t_point *b)
-{
-	double	tmp;
-
-	tmp = a->x * b->x + a->y * b->y + 1;
-	return (tmp);
-}
 
 t_point	canvastoviewport(t_point point, t_mlx *data)
 {
@@ -60,12 +52,13 @@ t_ui	parse_color_2(int c1, t_ui it)
 	return (dr * 0x10000 + dg * 0x100 + db);
 }
 
-t_ui	parse_color(int c1, int c2, double t)
+int	parse_color(int c1, int c2, double t)
 {
 	unsigned char dr;
 	unsigned char dg;
 	unsigned char db;
 
+	c1 = 0;
 	dr = (1 - t) * (double)(c1 / 0x10000 % 256) +
 		t * (double)(c2 / 0x10000 % 256);
 	dg = (1 - t) * (double)(c1 / 0x100 % 256) + t * (double)(c2 / 0x100 % 256);

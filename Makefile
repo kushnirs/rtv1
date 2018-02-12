@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
+#    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/06 12:00:38 by skushnir         ###   ########.fr        #
+#    Updated: 2018/02/08 11:24:17 by sergee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
-SRC = rtv1.c utility.c
+SRC = rtv1.c utility.c vector.c
 
 HDR = rtv1.h
 

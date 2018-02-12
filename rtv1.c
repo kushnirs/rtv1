@@ -3,61 +3,80 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/06 14:01:01 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/09 20:09:37 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "rtv1.h"
 #include <stdio.h>
 
-void	draw_line(t_mlx *data, t_point p0, t_point p1, int color)
+static double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light light[3])
 {
-	double		t;
-	double		k;
-	double		xy[2];
+	int		a;
+	double	i;
+	t_point	l;
+	t_point	r;
+	double	rv;
+	double	nl;
 
-	k = 1.0 / sqrt((p1.x - p0.x) * (p1.x - p0.x) +\
-		(p1.y - p0.y) * (p1.y - p0.y));
-	t = 0;
-	while (t <= 1)
+	i = 0;
+	a = -1;
+	while (++a < 3)
 	{
-		xy[0] = p0.x + t * (p1.x - p0.x);
-		xy[1] = p0.y + t * (p1.y - p0.y);
-		if (xy[0] >= 0 && xy[0] < data->canvas.x &&
-			xy[1] >= 0 && xy[1] < data->canvas.y)
-			data->data_adr[(int)xy[0] + (int)xy[1] * (int)data->canvas.x] = color;
-		t += k;
+		if (!ft_strcmp(light[a].type, "ambient"))
+			i += light[a].intensity;
+		else
+		{
+			if (!ft_strcmp(light[a].type, "point"))
+				l = vector_substr(&light[a].direction, p);
+			else
+				l =light[a].direction;
+			nl = vector_scalar(n, &l);
+			nl > 0 ? i += light[a].intensity * nl /
+				(vector_length(n) * vector_length(&l)) : 0;
+			if (s >= 0)
+			{
+				r = vector_mult(n, 2 * nl);
+				r = vector_substr(&r, &l);
+				rv = vector_scalar(&r, v);
+				rv > 0 ? i += light[a].intensity * pow(rv / (vector_length(&r) * vector_length(v)), s) : 0;
+			}
+		}
 	}
+	i > 1 ? i = 1 : 0;
+	return (i);
 }
 
-static t_point	raysphere(t_mlx *data,t_point *d, t_sphere *sphere)
+static t_point	raysphere(t_mlx *data, t_point *d, t_sphere *sphere)
 {
 	t_point	oc;
 	t_point t;
 	double	disc;
 	double	k[3];
 
-	oc = (t_point){data->camera.x - d->x, data->camera.y - d->y, data->camera.z - d->z};
-	k[0] = scalar(d, d);
-	k[1] = 2 * scalar(&oc, d);
-	k[2] = scalar(&oc, &oc) - sphere->radius * sphere->radius;
+	oc = vector_substr(&data->camera, &sphere->center);
+	k[0] = vector_scalar(d, d);
+	k[1] = 2 * vector_scalar(&oc, d);
+	k[2] = vector_scalar(&oc, &oc) - sphere->radius * sphere->radius;
 	disc = k[1] * k[1] - 4 * k[0] * k[2];
 	if (disc < 0)
-		return ((t_point){1, 1, 0});
-	t.x = (-k[1] + sqrt(disc)) / 2 * k[0];
-	t.y = (-k[1] - sqrt(disc)) / 2 * k[0];
+		return ((t_point){MAX_SIZE, MAX_SIZE, 0});
+	t.x = (-k[1] + sqrt(disc)) / (2 * k[0]);
+	t.y = (-k[1] - sqrt(disc)) / (2 * k[0]);
 	return (t);
 }
 
-static int	raytrace(t_point *d, t_mlx *data, t_sphere sphere[3])
+static int	raytrace(t_point *d, t_mlx *data, t_sphere sphere[3], t_light light[3])
 {
 	t_sphere	*closest_sphere;
 	t_point		t;
+	t_point		pn[2];
+	t_point		view;
 	int			i;
-	int			c_t;
+	double		c_t;
 
 	closest_sphere = NULL;
 	c_t = MAX_SIZE;
@@ -65,42 +84,49 @@ static int	raytrace(t_point *d, t_mlx *data, t_sphere sphere[3])
 	while (++i < 3)
 	{
 		t = raysphere(data, d, &sphere[i]);
-		if (t.x > 1 && t.x < MAX_SIZE && t.x < c_t)
+		if (t.x >= 1 && t.x < MAX_SIZE && t.x < c_t)
 		{
 			c_t = t.x;
 			closest_sphere = &sphere[i];
 		}
-		if (t.y > 1 && t.y < MAX_SIZE && t.y < c_t)
+		if (t.y >= 1 && t.y < MAX_SIZE && t.y < c_t)
 		{
 			c_t = t.y;
 			closest_sphere = &sphere[i];
 		}
 	}
 	if (!closest_sphere)
-		return (11111);
-	return (closest_sphere->color);
-
+		return (0xffffff);
+	pn[0] = vector_addition(&data->camera, &((t_point){d->x * c_t, d->y * c_t, d->z * c_t}));
+	pn[1] = vector_substr(&pn[0], &closest_sphere->center);
+	pn[1] = vector_mult(&pn[1], 1 / vector_length(&pn[1]));
+	view = vector_mult(d, -1);
+	return (parse_color(0, closest_sphere->color, ft_light(&pn[0], &pn[1], &view, closest_sphere->specular, light)));
 }
 
 static void	draw_scene(t_mlx *data)
 {
-	int		x;
-	int		y;
-	int 	color;
-	t_point	d;
+	int			x;
+	int			y;
+	int 		color;
+	t_point		d;
+	t_light		light[3];
 	t_sphere	sphere[3];
 
-	sphere[2] = (t_sphere){(t_point){500, 500, 0}, 10, 0xff0000};
-	sphere[1] = (t_sphere){(t_point){510, 510, 0}, 10, 0xffffff};
-	sphere[0] = (t_sphere){(t_point){320, 320, 0}, 10, 0xff00ff};
+	light[0] = (t_light){"ambient", 0.2, (t_point){0, 0, 0}};
+	light[1] = (t_light){"point", 0.6, (t_point){2, 1, 0}};
+	light[2] = (t_light){"direction", 0.2, (t_point){1, 4, 4}};
+	sphere[0] = (t_sphere){(t_point){0, -1, 3}, 1, 0xff0000, 1100};
+	sphere[1] = (t_sphere){(t_point){2, 0, 4}, 1, 0x0000ff, 1100};
+	sphere[2] = (t_sphere){(t_point){-2, 0, 4}, 1, 0x00ff00, 10};
 	x = -1;
 	while (++x < data->canvas.x)
 	{
 		y = -1;
 		while (++y < data->canvas.y)
 		{
-			d = canvastoviewport((t_point){x - WIDTH / 2, y - HIGH / 2, 0}, data);
-			color = raytrace(&d, data, sphere);
+			d = canvastoviewport((t_point){x - data->canvas.x / 2, data->canvas.y / 2 - y, 0}, data);
+			color = raytrace(&d, data, sphere, light);
 			data->data_adr[x + y * (int)data->canvas.x] = color;
 		}
 	}
@@ -113,7 +139,7 @@ int		main(int ac, char **av)
 
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
-	data = (t_mlx){.viewport = (t_point){.x = WIDTH * 20, .y = HIGH * 20}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
+	data = (t_mlx){.viewport = (t_point){.x = 1, .y = 1}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
 	.camera = (t_point){0, 0, 0}, .d = 1};
 	data.mlx = mlx_init();
 	data.win = mlx_new_window(data.mlx, data.canvas.x, data.canvas.y, "RTv1");
