@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utility.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/09 19:48:55 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/12 12:11:05 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 t_point	canvastoviewport(t_point point, t_mlx *data)
 {
 	t_point	tmp;
-	tmp = (t_point){point.x * data->viewport.x / data->canvas.x, point.y * data->viewport.y / data->canvas.y,
-		data->d};
+	tmp = (t_point){point.x * data->viewport.x / data->canvas.x,
+		point.y * data->viewport.y / data->canvas.y, data->d};
 	return (tmp);
 }
 
@@ -58,10 +58,21 @@ int	parse_color(int c1, int c2, double t)
 	unsigned char dg;
 	unsigned char db;
 
-	c1 = 0;
 	dr = (1 - t) * (double)(c1 / 0x10000 % 256) +
 		t * (double)(c2 / 0x10000 % 256);
 	dg = (1 - t) * (double)(c1 / 0x100 % 256) + t * (double)(c2 / 0x100 % 256);
 	db = (1 - t) * (double)(c1 % 256) + t * (double)(c2 % 256);
+	return (dr * 0x10000 + dg * 0x100 + db);
+}
+
+int	color_addition(int c1, int c2)
+{
+	unsigned char dr;
+	unsigned char dg;
+	unsigned char db;
+
+	dr = (double)(c1 / 0x10000 % 256) + (double)(c2 / 0x10000 % 256);
+	dg = (double)(c1 / 0x100 % 256) + (double)(c2 / 0x100 % 256);
+	db = (double)(c1 % 256) + (double)(c2 % 256);
 	return (dr * 0x10000 + dg * 0x100 + db);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   vector.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/08 11:23:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/08 12:39:57 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/12 08:44:58 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,4 +50,13 @@ double	vector_length(t_point *a)
 
 	tmp = sqrt(a->x * a->x + a->y * a->y  + a->z * a->z);
 	return (tmp);
+}
+
+t_point	reflect_ray(t_point n, t_point l)
+{
+	t_point	r;
+
+	r = vector_mult(&n, 2 * vector_scalar(&n, &l));
+	r = vector_substr(&r, &l);
+	return (r);
 }

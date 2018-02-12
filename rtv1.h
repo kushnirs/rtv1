@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/09 19:13:43 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/12 10:46:25 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include "libft/printf/ft_printf.h"
 
 # define DEVICE_TYPE CL_DEVICE_TYPE_CPU
-# define MAX_SIZE 214748367
+# define MAX_SIZE 21474836777
 # define HIGH	1000
 # define WIDTH	1000
 # define B_A	0
@@ -66,7 +66,8 @@ typedef struct			s_sphere
 	t_point				center;
 	double				radius;
 	int					color;
-	int				specular;
+	int					specular;
+	double				reflection;
 }						t_sphere;
 
 typedef struct			s_light
@@ -95,6 +96,7 @@ typedef struct			s_mlx
 
 int						parse_color(int c1, int c2, double t);
 t_ui					parse_color_2(int c1, t_ui t);
+int						color_addition(int c1, int c2);
 t_point					canvastoviewport(t_point point, t_mlx *data);
 double					vector_scalar(t_point *a, t_point *b);
 t_point					vector_substr(t_point *a, t_point *b);
@@ -103,5 +105,8 @@ t_point					vector_mult(t_point *a, double num);
 double					vector_length(t_point *a);
 int						key_action(int key, t_mlx *data);
 int						mouse_menu(int button, int x, int y, t_mlx *data);
+
+t_point					raysphere(t_point *o, t_point *d, t_sphere *sphere);
+t_point					reflect_ray(t_point n, t_point l);
 
 #endif
