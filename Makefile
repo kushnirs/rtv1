@@ -6,7 +6,7 @@
 #    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/08 11:24:17 by sergee           ###   ########.fr        #
+#    Updated: 2018/02/15 13:31:21 by sergee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,10 +23,10 @@ OBJ = $(SRC:.c=.o)
 all:lib $(NAME)
 
 $(NAME): $(OBJ) $(HDR) $(LIB)
-	gcc -Wall -Wextra -Werror -O3 -o $(NAME) $(OBJ) $(LIB) -framework OpenGl -framework AppKit -framework opencl
+	gcc  -O3 -o $(NAME) $(OBJ) $(LIB) -framework OpenGl -framework AppKit -framework opencl
 
 .c.o:
-	gcc  -Wall -Wextra -Werror  -O3 -c $< 
+	gcc  -O3 -c $< 
 
 lib: 
 	make -C libft;
@@ -41,3 +41,4 @@ fclean: clean
 re: fclean all
 
 .NOTPARALLEL: all $(NAME) re
+# -Wall -Wextra -Werror

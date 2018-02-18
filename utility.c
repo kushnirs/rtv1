@@ -3,14 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   utility.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/12 12:11:05 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/18 19:15:39 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "rtv1.h"
+
+t_point	cam_rot(t_point rot, t_point coord)
+{
+	t_point	p[3];
+	double	func[6];
+
+	func[0] = cos(M_PI * rot.x / 180);
+	func[1] = sin(M_PI * rot.x / 180);
+	func[2] = cos(M_PI * rot.y / 180);
+	func[3] = sin(M_PI * rot.y / 180);
+	func[4] = cos(M_PI * rot.z / 180);
+	func[5] = sin(M_PI * rot.z / 180);
+	p[0].x = coord.x;
+	p[0].y = coord.y * func[0] + coord.z * func[1];
+	p[0].z = coord.z * func[0] - coord.y * func[1];
+	p[1].x = p[0].x * func[2] + p[0].z * func[3];
+	p[1].y = p[0].y;
+	p[1].z = p[0].z * func[2] - p[0].x * func[3];
+	p[2].x = p[1].x * func[4] - p[1].y * func[5];
+	p[2].y = p[1].x * func[5] + p[1].y * func[4];
+	p[2].z = p[1].z;
+	return (p[2]);
+}
 
 t_point	canvastoviewport(t_point point, t_mlx *data)
 {

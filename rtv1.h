@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/12 10:46:25 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/19 01:08:40 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,14 +61,16 @@ typedef struct			s_point
 	double				z;
 }						t_point;
 
-typedef struct			s_sphere
+typedef struct			s_obj
 {
+	char				name[10];
 	t_point				center;
 	double				radius;
+	double				high;
 	int					color;
 	int					specular;
 	double				reflection;
-}						t_sphere;
+}						t_obj;
 
 typedef struct			s_light
 {
@@ -76,6 +78,23 @@ typedef struct			s_light
 	double				intensity;
 	t_point				direction;
 }						t_light;
+
+typedef struct			s_closest
+{
+	t_obj		*closest_obj;
+	double		c_t;
+}						t_closest;
+
+typedef struct			s_scene
+{
+	t_point	*o;
+	t_point	*d;
+	t_obj	*obj;
+	t_light	*light;
+	int		deep;
+	double	t_min;
+	double	t_max;
+}						t_scene;
 
 typedef struct			s_mlx
 {
@@ -105,8 +124,10 @@ t_point					vector_mult(t_point *a, double num);
 double					vector_length(t_point *a);
 int						key_action(int key, t_mlx *data);
 int						mouse_menu(int button, int x, int y, t_mlx *data);
+t_point					cam_rot(t_point rot, t_point coord);
 
-t_point					raysphere(t_point *o, t_point *d, t_sphere *sphere);
+t_point					raysphere(t_point *o, t_point *d, t_obj *sphere);
+t_point					raycylinder(t_point *o, t_point *l, t_obj *sphere);
 t_point					reflect_ray(t_point n, t_point l);
 
 #endif

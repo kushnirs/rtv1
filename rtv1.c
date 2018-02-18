@@ -3,47 +3,51 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/12 12:39:37 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/19 01:14:49 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "rtv1.h"
 #include <stdio.h>
 
-static int	ft_check_shadow(double t_max, t_point *p, t_point *l, t_sphere *sphere)
+static t_closest	intersections(t_scene *scene)
 {
-	t_sphere	*closest_sphere;
+	t_closest	closest;
 	t_point		t;
 	int			i;
-	double		c_t;
 
-	closest_sphere = NULL;
-	c_t = MAX_SIZE;
+	closest.closest_obj = NULL;
+	closest.c_t = scene->t_min;
 	i = -1;
 	while (++i < 4)
 	{
-		t = raysphere(p, l, &sphere[i]);
-		if (t.x > 0.001 && t.x < t_max && t.x < c_t)
+		if (!ft_strcmp(scene->obj[i].name, "cylinder"))
+			t = raycylinder(scene->o, scene->d, &scene->obj[i]);
+		else if (!ft_strcmp(scene->obj[i].name, "sphere"))
+			t = raysphere(scene->o, scene->d, &scene->obj[i]);
+		// printf("%.2f-", scene->t_min);
+		// printf("%.2f-", t.x);
+		// printf("%.2f ", scene->t_max);
+		if (t.x > scene->t_min && t.x < scene->t_max && t.x < closest.c_t)
 		{
-			c_t = t.x;
-			closest_sphere = &sphere[i];
+			closest.c_t = t.x;
+			closest.closest_obj = &scene->obj[i];
 		}
-		if (t.y > 0.001 && t.y < t_max && t.y < c_t)
+		if (t.y > scene->t_min && t.y < scene->t_max && t.y < closest.c_t)
 		{
-			c_t = t.y;
-			closest_sphere = &sphere[i];
+			closest.c_t = t.y;
+			closest.closest_obj = &scene->obj[i];
 		}
 	}
-	if (!closest_sphere)
-		return (0);
-	return (1);
+	return (closest);
 }
 
-static double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_sphere *sphere)
+static double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_obj *obj)
 {
+	t_closest	closest;
 	int		a;
 	double	t_max;
 	double	i;
@@ -70,7 +74,8 @@ static double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light
 				l =light[a].direction;
 				t_max = MAX_SIZE;
 			}
-			if (ft_check_shadow(t_max, p, &l, sphere))
+			closest = intersections(&((t_scene){p, &l, obj, NULL, 0, 0.001, t_max}));
+			if (closest.closest_obj)
 				continue;
 			nl = vector_scalar(n, &l);
 			nl > 0 ? i += light[a].intensity * nl /
@@ -87,17 +92,17 @@ static double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light
 	return (i);
 }
 
-t_point	raysphere(t_point *o, t_point *d, t_sphere *sphere)
+t_point	raysphere(t_point *o, t_point *d, t_obj *obj)
 {
 	t_point	oc;
 	t_point t;
 	double	disc;
 	double	k[3];
 
-	oc = vector_substr(o, &sphere->center);
+	oc = vector_substr(o, &obj->center);
 	k[0] = vector_scalar(d, d);
 	k[1] = 2 * vector_scalar(&oc, d);
-	k[2] = vector_scalar(&oc, &oc) - sphere->radius * sphere->radius;
+	k[2] = vector_scalar(&oc, &oc) - obj->radius * obj->radius;
 	disc = k[1] * k[1] - 4 * k[0] * k[2];
 	if (disc < 0)
 		return ((t_point){MAX_SIZE, MAX_SIZE, 0});
@@ -106,49 +111,86 @@ t_point	raysphere(t_point *o, t_point *d, t_sphere *sphere)
 	return (t);
 }
 
-static int	raytrace(t_point *o, t_point *d, t_sphere *sphere, t_light *light, int deep, double t_min)
+static int intersect_cylinder(t_point *d, t_point *o, t_point *v, t_obj *obj, t_point *p2, double t)
 {
-	t_sphere	*closest_sphere;
+	t_point	p;
+	t_point	a;
+	t_point	b;
+	double k[2];
+
+	if (k < 0)
+		return (0);
+	p = vector_mult(d, t);
+	p = vector_addition(o, &p);
+	a = vector_substr(&p, &obj->center);
+	k[0] = vector_scalar(v, &a);
+	b = vector_substr(&p, p2);
+	k[1] = vector_scalar(v, &b);
+	if ((k[0] < 0 && k[1] > 0))
+		return (1);
+	return (0);
+}
+
+t_point	raycylinder(t_point *o, t_point *d, t_obj *obj)
+{
+	t_point	p;
+	t_point	p2;
+	t_point	v;
+	t_point t;
+	t_point	a;
+	t_point	b;
+	double	disc;
+	double	k[3];
+
+	p2 = (t_point){obj->center.x, obj->center.y + 200, obj->center.z};
+	v = vector_substr(&obj->center, &p2);
+	v = vector_mult(&v, 1 / vector_length(&v));
+	p = vector_substr(o, &obj->center);
+	a = vector_mult(&v, vector_scalar(d, &v));
+	a = vector_substr(d, &a);
+	k[0] = vector_scalar(&a, &a);
+	b = vector_mult(&v, vector_scalar(&p, &v));
+	b = vector_substr(&p, &b);
+	k[1] = 2 * vector_scalar(&a, &b);
+	k[2] = vector_scalar(&b, &b) - obj->radius * obj->radius;
+	disc = k[1] * k[1] - 4 * k[0] * k[2];
+	if (disc < 0)
+		return ((t_point){MAX_SIZE, MAX_SIZE, 0});
+	t.x = (-k[1] + sqrt(disc)) / (2 * k[0]);
+	t.y = (-k[1] - sqrt(disc)) / (2 * k[0]);
+
+	k[0] = intersect_cylinder(d, o, &v, obj, &p2, t.x);
+	k[1] = intersect_cylinder(d, o, &v, obj, &p2, t.y);
+	if (k[0] || k[1])
+		return (t);
+	return ((t_point){MAX_SIZE, MAX_SIZE, 0});
+}
+
+static int	raytrace(t_scene scene)
+{
+	t_closest	closest;
 	t_point		t;
 	t_point		pn[2];
 	t_point		view;
 	int			i;
-	double		c_t;
 
 	t_point		r;
 	int			color[2];
 
-
-	closest_sphere = NULL;
-	c_t = MAX_SIZE;
-	i = -1;
-	while (++i < 4)
-	{
-		t = raysphere(o, d, &sphere[i]);
-		if (t.x > t_min && t.x < MAX_SIZE && t.x < c_t)
-		{
-			c_t = t.x;
-			closest_sphere = &sphere[i];
-		}
-		if (t.y > t_min && t.y < MAX_SIZE && t.y < c_t)
-		{
-			c_t = t.y;
-			closest_sphere = &sphere[i];
-		}
-	}
-	if (!closest_sphere)
+	closest = intersections(&scene);
+	if (!closest.closest_obj)
 		return (0);
-	pn[0] = vector_addition(o, &((t_point){d->x * c_t, d->y * c_t, d->z * c_t}));
-	pn[1] = vector_substr(&pn[0], &closest_sphere->center);
-	pn[1] = vector_mult(&pn[1], 1 / vector_length(&pn[1]));
-	view = vector_mult(d, -1);
-	color[0] = parse_color(0, closest_sphere->color, ft_light(&pn[0], &pn[1], &view, closest_sphere->specular, light, sphere));
-	if (deep <= 0 || closest_sphere->reflection <= 0)
-		return (color[0]);
-	r = reflect_ray(view, pn[1]);
-	color[1] = raytrace(&pn[0], &r, sphere, light, deep - 1, 0.001);
-	color[0] = parse_color(0, color[0], 1 - closest_sphere->reflection) + parse_color(0, color[1], closest_sphere->reflection);
-	return (color[0]);
+	// pn[0] = vector_addition(scene.o, &((t_point){scene.d->x * closest.c_t, scene.d->y * closest.c_t, scene.d->z * closest.c_t}));
+	// pn[1] = vector_substr(&pn[0], &closest.closest_obj->center);
+	// pn[1] = vector_mult(&pn[1], 1 / vector_length(&pn[1]));
+	// view = vector_mult(scene.d, -1);
+	// color[0] = parse_color(0, closest.closest_obj->color, ft_light(&pn[0], &pn[1], &view, closest.closest_obj->specular, scene.light, scene.obj));
+	// if (deep <= 0 || closest_obj->reflection <= 0)
+	// 	return (color[0]);
+	// r = reflect_ray(view, pn[1]);
+	// color[1] = raytrace(&pn[0], &r, obj, light, deep - 1, 0.001);
+	// color[0] = parse_color(0, color[0], 1 - closest_obj->reflection) + parse_color(0, color[1], closest_obj->reflection);
+	return (closest.closest_obj->color);
 }
 
 static void	draw_scene(t_mlx *data)
@@ -158,15 +200,16 @@ static void	draw_scene(t_mlx *data)
 	int 		color;
 	t_point		d;
 	t_light		light[3];
-	t_sphere	sphere[4];
+	t_obj		obj[4];
 
 	light[0] = (t_light){"ambient", 0.2, (t_point){0, 0, 0}};
-	light[1] = (t_light){"point", 0.6, (t_point){2, 1, 0}};
-	light[2] = (t_light){"direction", 0.2, (t_point){1, 4, 4}};
-	sphere[0] = (t_sphere){(t_point){0, -1, 3}, 1, 0xff0000, 500, 0.2};
-	sphere[1] = (t_sphere){(t_point){2, 0, 4}, 1, 0x0000ff, 500, 0.3};
-	sphere[2] = (t_sphere){(t_point){-2, 0, 4}, 1, 0x00ff00, 10, 0.4};
-	sphere[3] = (t_sphere){(t_point){0, -5001, 0}, 5000, 0xffff00, 1000, 0.5};
+	light[1] = (t_light){"point", 0.6, (t_point){200, 100, 0}};
+	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
+	// obj[0] = (t_obj){(t_point){0, -100, 300}, 100, 0xff0000, 500, 0.2};
+	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 400}, 90, 0, 0xff0000, 500, 0.2};
+	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, 100, 0, 0x0000ff, 500, 0.3};
+	obj[2] = (t_obj){"sphere",(t_point){-200, 0, 400}, 100, 0, 0x00ff00, 10, 0.4};
+	obj[3] = (t_obj){"sphere",(t_point){0, -500100, 0}, 500000, 0, 0xffff00, 1000, 0.5};
 	x = -1;
 	while (++x < data->canvas.x)
 	{
@@ -174,7 +217,8 @@ static void	draw_scene(t_mlx *data)
 		while (++y < data->canvas.y)
 		{
 			d = canvastoviewport((t_point){x - data->canvas.x / 2, data->canvas.y / 2 - y, 0}, data);
-			color = raytrace(&data->camera, &d, sphere, light, 1, 1);
+			d = cam_rot((t_point){0, 0, 0}, d);
+			color = raytrace((t_scene){&data->camera, &d, obj, light, 1, 1, MAX_SIZE});
 			data->data_adr[x + y * (int)data->canvas.x] = color;
 		}
 	}
@@ -187,8 +231,8 @@ int		main(int ac, char **av)
 
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
-	data = (t_mlx){.viewport = (t_point){.x = 1, .y = 1}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
-	.camera = (t_point){0, 0, 0}, .d = 1};
+	data = (t_mlx){.viewport = (t_point){.x = 100, .y = 100}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
+	.camera = (t_point){0, 0, 0}, .d = 70};
 	data.mlx = mlx_init();
 	data.win = mlx_new_window(data.mlx, data.canvas.x, data.canvas.y, "RTv1");
 	data.image = mlx_new_image(data.mlx, data.canvas.x, data.canvas.y);
