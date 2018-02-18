@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/19 01:14:49 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/19 01:27:53 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static t_closest	intersections(t_scene *scene)
 	int			i;
 
 	closest.closest_obj = NULL;
-	closest.c_t = scene->t_min;
+	closest.c_t = scene->t_max;
 	i = -1;
 	while (++i < 4)
 	{
@@ -28,9 +28,6 @@ static t_closest	intersections(t_scene *scene)
 			t = raycylinder(scene->o, scene->d, &scene->obj[i]);
 		else if (!ft_strcmp(scene->obj[i].name, "sphere"))
 			t = raysphere(scene->o, scene->d, &scene->obj[i]);
-		// printf("%.2f-", scene->t_min);
-		// printf("%.2f-", t.x);
-		// printf("%.2f ", scene->t_max);
 		if (t.x > scene->t_min && t.x < scene->t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -180,17 +177,20 @@ static int	raytrace(t_scene scene)
 	closest = intersections(&scene);
 	if (!closest.closest_obj)
 		return (0);
-	// pn[0] = vector_addition(scene.o, &((t_point){scene.d->x * closest.c_t, scene.d->y * closest.c_t, scene.d->z * closest.c_t}));
-	// pn[1] = vector_substr(&pn[0], &closest.closest_obj->center);
-	// pn[1] = vector_mult(&pn[1], 1 / vector_length(&pn[1]));
-	// view = vector_mult(scene.d, -1);
-	// color[0] = parse_color(0, closest.closest_obj->color, ft_light(&pn[0], &pn[1], &view, closest.closest_obj->specular, scene.light, scene.obj));
+	pn[0] = vector_addition(scene.o, &((t_point){scene.d->x * closest.c_t,
+		scene.d->y * closest.c_t, scene.d->z * closest.c_t}));
+	pn[1] = vector_substr(&pn[0], &closest.closest_obj->center);
+	pn[1] = vector_mult(&pn[1], 1 / vector_length(&pn[1]));
+	view = vector_mult(scene.d, -1);
+	color[0] = parse_color(0, closest.closest_obj->color,
+		ft_light(&pn[0], &pn[1], &view, closest.closest_obj->specular,
+			scene.light, scene.obj));
 	// if (deep <= 0 || closest_obj->reflection <= 0)
 	// 	return (color[0]);
 	// r = reflect_ray(view, pn[1]);
 	// color[1] = raytrace(&pn[0], &r, obj, light, deep - 1, 0.001);
 	// color[0] = parse_color(0, color[0], 1 - closest_obj->reflection) + parse_color(0, color[1], closest_obj->reflection);
-	return (closest.closest_obj->color);
+	return (color[0]);
 }
 
 static void	draw_scene(t_mlx *data)
@@ -205,7 +205,7 @@ static void	draw_scene(t_mlx *data)
 	light[0] = (t_light){"ambient", 0.2, (t_point){0, 0, 0}};
 	light[1] = (t_light){"point", 0.6, (t_point){200, 100, 0}};
 	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
-	// obj[0] = (t_obj){(t_point){0, -100, 300}, 100, 0xff0000, 500, 0.2};
+
 	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 400}, 90, 0, 0xff0000, 500, 0.2};
 	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, 100, 0, 0x0000ff, 500, 0.3};
 	obj[2] = (t_obj){"sphere",(t_point){-200, 0, 400}, 100, 0, 0x00ff00, 10, 0.4};
@@ -216,9 +216,11 @@ static void	draw_scene(t_mlx *data)
 		y = -1;
 		while (++y < data->canvas.y)
 		{
-			d = canvastoviewport((t_point){x - data->canvas.x / 2, data->canvas.y / 2 - y, 0}, data);
+			d = canvastoviewport((t_point){x - data->canvas.x / 2,
+				data->canvas.y / 2 - y, 0}, data);
 			d = cam_rot((t_point){0, 0, 0}, d);
-			color = raytrace((t_scene){&data->camera, &d, obj, light, 1, 1, MAX_SIZE});
+			color = raytrace((t_scene){&data->camera, &d, obj,
+				light, 1, 1, MAX_SIZE});
 			data->data_adr[x + y * (int)data->canvas.x] = color;
 		}
 	}
