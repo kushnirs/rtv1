@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/19 01:08:40 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/19 16:56:57 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 # include "OpenCL/opencl.h"
 # include "minilibx/mlx.h"
 # include "libft/printf/ft_printf.h"
+
+#include <stdio.h>
 
 # define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define MAX_SIZE 21474836777
@@ -64,9 +66,9 @@ typedef struct			s_point
 typedef struct			s_obj
 {
 	char				name[10];
-	t_point				center;
+	t_point				c;
+	t_point				d;
 	double				radius;
-	double				high;
 	int					color;
 	int					specular;
 	double				reflection;
@@ -127,7 +129,12 @@ int						mouse_menu(int button, int x, int y, t_mlx *data);
 t_point					cam_rot(t_point rot, t_point coord);
 
 t_point					raysphere(t_point *o, t_point *d, t_obj *sphere);
+t_point					rayplane(t_point *o, t_point *d, t_obj *obj);
 t_point					raycylinder(t_point *o, t_point *l, t_obj *sphere);
+int						intersect_cylinder(t_point *d, t_point *o, t_point *v, t_obj *obj, t_point *p2, double t);
 t_point					reflect_ray(t_point n, t_point l);
+t_closest				intersections(t_scene *scene);
+double					ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_obj *obj);
+
 
 #endif
