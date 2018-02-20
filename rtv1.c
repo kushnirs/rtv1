@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/20 09:11:55 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/20 13:36:21 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,27 +67,6 @@ static t_point	v_normal(t_point *o, t_point *d, t_point *p, t_closest *closest)
 	return (n);
 }
 
-// static t_point	v_normal(t_point *o, t_point *d, t_point *p, t_closest *closest)
-// {
-// 	t_point		t;
-// 	t_point		n;
-// 	t_point		proj;
-
-	
-// 	if (!ft_strcmp(closest->closest_obj->name, "sphere"))
-// 		t = closest->closest_obj->c;
-// 	else if (!ft_strcmp(closest->closest_obj->name, "cylinder"))
-// 	{
-// 		t = vector_addition(&closest->closest_obj->c, &closest->closest_obj->d);
-// 		t = vector_mult(&t, 0.5);
-// 	}
-// 	if (!ft_strcmp(closest->closest_obj->name, "plane"))
-// 		return (closest->closest_obj->d);
-// 	n = vector_substr(p, &t);
-// 	n = vector_mult(&n, 1 / vector_length(&n));
-// 	return (n);
-// }
-
 static int	raytrace(t_scene scene)
 {
 	t_closest	closest;
@@ -126,14 +105,15 @@ static void	draw_scene(t_mlx *data)
 	t_light		light[3];
 	t_obj		obj[4];
 
-	light[0] = (t_light){"ambient", 0.3, (t_point){0, 0, 0}};
+	light[0] = (t_light){"ambient", 0.3, (t_point){0, 100, 0}};
 	light[1] = (t_light){"point", 0.5, (t_point){300, 100, 200}};
 	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
 
 	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 500}, (t_point){0, 100, 500}, 90, 0xff0000, 100, 0.2};
 	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, (t_point){0, 0, 0}, 100, 0x0000ff, 500, 0.3};
 	obj[2] = (t_obj){"sphere",(t_point){-200, 0, 400}, (t_point){0, 0, 0}, 100, 0x00ff00, 1000, 0.4};
-	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, -99, 0}, 0, 0xffff00, 500, 0};
+	// obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, -99, 0}, 0, 0xffff00, 500, 0};
+	obj[3] = (t_obj){"sphere",(t_point){0, -500100, 0}, (t_point){0, 0, 0}, 500000, 0xffff00, 500, 0};
 	x = -1;
 	while (++x < data->canvas.x)
 	{
@@ -158,7 +138,7 @@ int		main(int ac, char **av)
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
 	data = (t_mlx){.viewport = (t_point){.x = 100, .y = 100}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
-	.camera = (t_point){0, 0, 0}, .d = 40};
+	.camera = (t_point){0, 0, 0}, .d = 50};
 	data.mlx = mlx_init();
 	data.win = mlx_new_window(data.mlx, data.canvas.x, data.canvas.y, "RTv1");
 	data.image = mlx_new_image(data.mlx, data.canvas.x, data.canvas.y);
