@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/19 22:25:10 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/20 09:11:55 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,26 +46,25 @@ t_closest	intersections(t_scene *scene)
 static t_point	v_normal(t_point *o, t_point *d, t_point *p, t_closest *closest)
 {
 	t_point		t;
-		t_point		n;
-		double		scal;
-		t_point		proj;
+	t_point		n;
+	double		scal;
+	t_point		proj;
 		
-		t = closest->closest_obj->c;
-		if (!ft_strcmp(closest->closest_obj->name, "cylinder"))
-		{
-			n = vector_substr(p, &t);
-			scal = vector_scalar(&n, &closest->closest_obj->d) /
-				vector_scalar(&closest->closest_obj->d, &closest->closest_obj->d);
-			proj = vector_mult(&closest->closest_obj->d, scal);
-			n = vector_substr(&n, &proj);
-			n = vector_mult(&n, 1 / vector_length(&n));
-			return (n);
-		}
-		else if (!ft_strcmp(closest->closest_obj->name, "plane"))
-			return (closest->closest_obj->d);
-		n = vector_substr(p, &t);
+	if (!ft_strcmp(closest->closest_obj->name, "cylinder"))
+	{
+		t = (t_point){0, 1, 0};
+		n = vector_substr(p, &closest->closest_obj->c);
+		scal = vector_scalar(&n, &t);
+		proj = vector_mult(&t, scal);
+		n = vector_substr(&n, &proj);
 		n = vector_mult(&n, 1 / vector_length(&n));
 		return (n);
+	}
+	else if (!ft_strcmp(closest->closest_obj->name, "plane"))
+		return (closest->closest_obj->d);
+	n = vector_substr(p, &closest->closest_obj->c);
+	n = vector_mult(&n, 1 / vector_length(&n));
+	return (n);
 }
 
 // static t_point	v_normal(t_point *o, t_point *d, t_point *p, t_closest *closest)
@@ -128,13 +127,13 @@ static void	draw_scene(t_mlx *data)
 	t_obj		obj[4];
 
 	light[0] = (t_light){"ambient", 0.3, (t_point){0, 0, 0}};
-	light[1] = (t_light){"point", 0.5, (t_point){200, 200, 175}};
+	light[1] = (t_light){"point", 0.5, (t_point){300, 100, 200}};
 	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
 
-	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 400}, (t_point){0, 100, 400}, 90, 0xff0000, 1000, 0.2};
+	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 500}, (t_point){0, 100, 500}, 90, 0xff0000, 100, 0.2};
 	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, (t_point){0, 0, 0}, 100, 0x0000ff, 500, 0.3};
 	obj[2] = (t_obj){"sphere",(t_point){-200, 0, 400}, (t_point){0, 0, 0}, 100, 0x00ff00, 1000, 0.4};
-	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, -99, 0}, 0, 0xffff00, -1, 0};
+	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, -99, 0}, 0, 0xffff00, 500, 0};
 	x = -1;
 	while (++x < data->canvas.x)
 	{
