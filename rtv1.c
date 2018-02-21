@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/20 13:36:21 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/21 14:47:51 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ t_closest	intersections(t_scene *scene)
 			t = raysphere(scene->o, scene->d, &scene->obj[i]);
 		else if (!ft_strcmp(scene->obj[i].name, "plane"))
 			t = rayplane(scene->o, scene->d, &scene->obj[i]);
+		else if (!ft_strcmp(scene->obj[i].name, "cone"))
+			t = raycone(scene->o, scene->d, &scene->obj[i]);
 		if (t.x > scene->t_min && t.x < scene->t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -43,27 +45,39 @@ t_closest	intersections(t_scene *scene)
 	return (closest);
 }
 
-static t_point	v_normal(t_point *o, t_point *d, t_point *p, t_closest *closest)
+static t_point	v_normal(t_point *p, t_closest *closest)
 {
 	t_point		t;
 	t_point		n;
 	double		scal;
 	t_point		proj;
-		
+	
+	t = (t_point){0, 1, 0};
 	if (!ft_strcmp(closest->closest_obj->name, "cylinder"))
 	{
-		t = (t_point){0, 1, 0};
-		n = vector_substr(p, &closest->closest_obj->c);
-		scal = vector_scalar(&n, &t);
-		proj = vector_mult(&t, scal);
-		n = vector_substr(&n, &proj);
-		n = vector_mult(&n, 1 / vector_length(&n));
+		n = v_sub(p, &closest->closest_obj->c);
+		scal = v_scal(&n, &t);
+		proj = v_mult(&t, scal);
+		n = v_sub(&n, &proj);
+		n = v_mult(&n, 1 / v_len(&n));
+		return (n);
+	}
+	else if (!ft_strcmp(closest->closest_obj->name, "cone"))
+	{
+		n = v_sub(p, &closest->closest_obj->c);
+		scal = v_scal(&n, &t);
+		proj = v_mult(&t, scal);
+		scal = 1 + tan(closest->closest_obj->radius * M_PI / 180) *
+			tan(closest->closest_obj->radius * M_PI / 180);
+		proj = v_mult(&proj, scal);
+		n = v_sub(&n, &proj);
+		n = v_mult(&n, 1 / v_len(&n));
 		return (n);
 	}
 	else if (!ft_strcmp(closest->closest_obj->name, "plane"))
 		return (closest->closest_obj->d);
-	n = vector_substr(p, &closest->closest_obj->c);
-	n = vector_mult(&n, 1 / vector_length(&n));
+	n = v_sub(p, &closest->closest_obj->c);
+	n = v_mult(&n, 1 / v_len(&n));
 	return (n);
 }
 
@@ -81,10 +95,10 @@ static int	raytrace(t_scene scene)
 	closest = intersections(&scene);
 	if (!closest.closest_obj)
 		return (0);
-	p = vector_addition(scene.o, &((t_point){scene.d->x * closest.c_t,
+	p = v_add(scene.o, &((t_point){scene.d->x * closest.c_t,
 		scene.d->y * closest.c_t, scene.d->z * closest.c_t}));
-	n = v_normal(scene.o, scene.d, &p, &closest);
-	view = vector_mult(scene.d, -1);
+	n = v_normal(&p, &closest);
+	view = v_mult(scene.d, -1);
 	color[0] = parse_color(0, closest.closest_obj->color,
 		ft_light(&p, &n, &view, closest.closest_obj->specular,
 			scene.light, scene.obj));
@@ -105,15 +119,14 @@ static void	draw_scene(t_mlx *data)
 	t_light		light[3];
 	t_obj		obj[4];
 
-	light[0] = (t_light){"ambient", 0.3, (t_point){0, 100, 0}};
-	light[1] = (t_light){"point", 0.5, (t_point){300, 100, 200}};
+	light[0] = (t_light){"ambient", 0.2, (t_point){300, 100, 0}};
+	light[1] = (t_light){"point", 0.6, (t_point){300, 100, 0}};
 	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
-
-	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 500}, (t_point){0, 100, 500}, 90, 0xff0000, 100, 0.2};
-	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, (t_point){0, 0, 0}, 100, 0x0000ff, 500, 0.3};
-	obj[2] = (t_obj){"sphere",(t_point){-200, 0, 400}, (t_point){0, 0, 0}, 100, 0x00ff00, 1000, 0.4};
-	// obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, -99, 0}, 0, 0xffff00, 500, 0};
-	obj[3] = (t_obj){"sphere",(t_point){0, -500100, 0}, (t_point){0, 0, 0}, 500000, 0xffff00, 500, 0};
+	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 500}, (t_point){0, 150, 500}, 90, 0xff0000, 100, 0.2};
+	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, (t_point){0, 0, 0}, 100, 0x0000ff, 50, 0.3};
+	obj[2] = (t_obj){"cone",(t_point){-200, -100, 400}, (t_point){-200, 150, 400}, 22.5, 0x00ff00, 100, 0.4};
+	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, -1, 0};
+	// obj[4] = (t_obj){"plane",(t_point){0, 0, 1000}, (t_point){0, 0, 1}, 0, 0x87ceeb, 10, 0};
 	x = -1;
 	while (++x < data->canvas.x)
 	{

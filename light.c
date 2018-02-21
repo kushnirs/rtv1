@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:04:08 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/20 13:32:34 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/21 13:10:36 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_obj
 		{
 			if (!ft_strcmp(light[a].type, "point"))
 			{
-				l = vector_substr(&light[a].direction, p);
+				l = v_sub(&light[a].direction, p);
 				t_max = 1;
 			}
 			else
@@ -44,14 +44,14 @@ double	ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_obj
 			closest = intersections(&((t_scene){p, &l, obj, NULL, 0, 0.001, t_max}));
 			if (closest.closest_obj)
 				continue;
-			nl = vector_scalar(n, &l);
+			nl = v_scal(n, &l);
 			nl > 0 ? i += light[a].intensity * nl /
-				(vector_length(n) * vector_length(&l)) : 0;
+				(v_len(n) * v_len(&l)) : 0;
 			if (s >= 0)
 			{
 				r = reflect_ray(*n, l);
-				rv = vector_scalar(&r, v);
-				rv > 0 ? i += light[a].intensity * pow(rv / (vector_length(&r) * vector_length(v)), s) : 0;
+				rv = v_scal(&r, v);
+				rv > 0 ? i += light[a].intensity * pow(rv / (v_len(&r) * v_len(v)), s) : 0;
 			}
 		}
 	}

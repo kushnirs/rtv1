@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/19 16:56:57 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/21 10:35:44 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,11 +119,11 @@ int						parse_color(int c1, int c2, double t);
 t_ui					parse_color_2(int c1, t_ui t);
 int						color_addition(int c1, int c2);
 t_point					canvastoviewport(t_point point, t_mlx *data);
-double					vector_scalar(t_point *a, t_point *b);
-t_point					vector_substr(t_point *a, t_point *b);
-t_point					vector_addition(t_point *a, t_point *b);
-t_point					vector_mult(t_point *a, double num);
-double					vector_length(t_point *a);
+double					v_scal(t_point *a, t_point *b);
+t_point					v_sub(t_point *a, t_point *b);
+t_point					v_add(t_point *a, t_point *b);
+t_point					v_mult(t_point *a, double num);
+double					v_len(t_point *a);
 int						key_action(int key, t_mlx *data);
 int						mouse_menu(int button, int x, int y, t_mlx *data);
 t_point					cam_rot(t_point rot, t_point coord);
@@ -131,6 +131,7 @@ t_point					cam_rot(t_point rot, t_point coord);
 t_point					raysphere(t_point *o, t_point *d, t_obj *sphere);
 t_point					rayplane(t_point *o, t_point *d, t_obj *obj);
 t_point					raycylinder(t_point *o, t_point *l, t_obj *sphere);
+t_point					raycone(t_point *o, t_point *d, t_obj *obj);
 int						intersect_cylinder(t_point *d, t_point *o, t_point *v, t_obj *obj, t_point *p2, double t);
 t_point					reflect_ray(t_point n, t_point l);
 t_closest				intersections(t_scene *scene);

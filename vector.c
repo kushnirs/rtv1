@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   vector.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/08 11:23:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/15 13:37:48 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/21 10:38:38 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "rtv1.h"
 
-double	vector_scalar(t_point *a, t_point *b)
+double	v_scal(t_point *a, t_point *b)
 {
 	double	tmp;
 
@@ -20,7 +20,7 @@ double	vector_scalar(t_point *a, t_point *b)
 	return (tmp);
 }
 
-t_point vector_substr(t_point *a, t_point *b)
+t_point v_sub(t_point *a, t_point *b)
 {
 	t_point	tmp;
 
@@ -28,7 +28,7 @@ t_point vector_substr(t_point *a, t_point *b)
 	return (tmp);
 }
 
-t_point vector_addition(t_point *a, t_point *b)
+t_point v_add(t_point *a, t_point *b)
 {
 	t_point	tmp;
 
@@ -36,7 +36,7 @@ t_point vector_addition(t_point *a, t_point *b)
 	return (tmp);
 }
 
-t_point	vector_mult(t_point *a, double num)
+t_point	v_mult(t_point *a, double num)
 {
 	t_point	tmp;
 
@@ -44,7 +44,7 @@ t_point	vector_mult(t_point *a, double num)
 	return (tmp);
 }
 
-double	vector_length(t_point *a)
+double	v_len(t_point *a)
 {
 	double	tmp;
 
@@ -56,7 +56,7 @@ t_point	reflect_ray(t_point n, t_point l)
 {
 	t_point	r;
 
-	r = vector_mult(&n, 2 * vector_scalar(&n, &l));
-	r = vector_substr(&r, &l);
+	r = v_mult(&n, 2 * v_scal(&n, &l));
+	r = v_sub(&r, &l);
 	return (r);
 }
