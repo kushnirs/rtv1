@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/19 15:14:35 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/23 21:11:36 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,42 +48,24 @@ double	formula(double a, double b, double t)
 	return ((1 - t) * a + b * t);
 }
 
-int		close_window(t_mlx *data)
+t_point	reflect_ray(t_point n, t_point l)
 {
-	mlx_destroy_window(data->mlx, data->win);
-	return (0);
+	t_point	r;
+
+	r = v_mult(&n, 2 * v_scal(&n, &l));
+	r = v_sub(&r, &l);
+	return (r);
 }
 
-int		key_action(int key, t_mlx *data)
+t_point	q_equation(double k[3])
 {
-	(void)data;
-	key == ESC ? exit(0) : 0;
-	return (0);
-}
+	t_point	t;
+	double	disc;
 
-t_ui	parse_color_2(int c1, t_ui it)
-{
-	double			t;
-	unsigned char	dr;
-	unsigned char	dg;
-	unsigned char	db;
-
-	t = (double)c1 / (double)it;
-	dr = 9 * (1 - t) * t * t * t * 255;
-	dg = 15 * (1 - t) * (1 - t) * t * t * 255;
-	db = 8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255;
-	return (dr * 0x10000 + dg * 0x100 + db);
-}
-
-int	parse_color(int c1, int c2, double t)
-{
-	unsigned char dr;
-	unsigned char dg;
-	unsigned char db;
-
-	dr = (1 - t) * (double)(c1 / 0x10000 % 256) +
-		t * (double)(c2 / 0x10000 % 256);
-	dg = (1 - t) * (double)(c1 / 0x100 % 256) + t * (double)(c2 / 0x100 % 256);
-	db = (1 - t) * (double)(c1 % 256) + t * (double)(c2 % 256);
-	return (dr * 0x10000 + dg * 0x100 + db);
+	disc = k[1] * k[1] - 4 * k[0] * k[2];
+	if (disc < 0)
+		return ((t_point){MAX_SIZE, MAX_SIZE, 0});
+	t.x = (-k[1] + sqrt(disc)) / (2 * k[0]);
+	t.y = (-k[1] - sqrt(disc)) / (2 * k[0]);
+	return (t);
 }

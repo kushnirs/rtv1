@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/21 10:35:44 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/23 20:59:57 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 # define DEVICE_TYPE CL_DEVICE_TYPE_CPU
-# define MAX_SIZE 21474836777
+# define MAX_SIZE 214748367
 # define HIGH	1000
 # define WIDTH	1000
 # define B_A	0
@@ -70,7 +70,7 @@ typedef struct			s_obj
 	t_point				d;
 	double				radius;
 	int					color;
-	int					specular;
+	double				specular;
 	double				reflection;
 }						t_obj;
 
@@ -83,19 +83,19 @@ typedef struct			s_light
 
 typedef struct			s_closest
 {
-	t_obj		*closest_obj;
-	double		c_t;
+	t_obj				*closest_obj;
+	double				c_t;
 }						t_closest;
 
 typedef struct			s_scene
 {
-	t_point	*o;
-	t_point	*d;
-	t_obj	*obj;
-	t_light	*light;
-	int		deep;
-	double	t_min;
-	double	t_max;
+	t_point				*o;
+	t_point				*d;
+	t_obj				*obj;
+	t_light				*light;
+	int					deep;
+	double				t_min;
+	double				t_max;
 }						t_scene;
 
 typedef struct			s_mlx
@@ -114,28 +114,45 @@ typedef struct			s_mlx
 	double				index;
 	t_host				host;
 }						t_mlx;
-
+/*
+**	color func
+*/
 int						parse_color(int c1, int c2, double t);
-t_ui					parse_color_2(int c1, t_ui t);
-int						color_addition(int c1, int c2);
-t_point					canvastoviewport(t_point point, t_mlx *data);
+int						parse_color_2(int c1, t_ui t);
+int						average_color(int *color, int smooth);
+/*
+**	vector func
+*/
 double					v_scal(t_point *a, t_point *b);
 t_point					v_sub(t_point *a, t_point *b);
 t_point					v_add(t_point *a, t_point *b);
 t_point					v_mult(t_point *a, double num);
 double					v_len(t_point *a);
+/*
+**	handlers
+*/
 int						key_action(int key, t_mlx *data);
-int						mouse_menu(int button, int x, int y, t_mlx *data);
+int						mouse_action(int button, int x, int y, t_mlx *data);
+/*
+**	utility func
+*/
+t_point					q_equation(double k[3]);
 t_point					cam_rot(t_point rot, t_point coord);
-
+t_point					canvastoviewport(t_point point, t_mlx *data);
+double					formula(double a, double b, double t);
+/*
+**	ray_obj func
+*/
 t_point					raysphere(t_point *o, t_point *d, t_obj *sphere);
 t_point					rayplane(t_point *o, t_point *d, t_obj *obj);
 t_point					raycylinder(t_point *o, t_point *l, t_obj *sphere);
 t_point					raycone(t_point *o, t_point *d, t_obj *obj);
-int						intersect_cylinder(t_point *d, t_point *o, t_point *v, t_obj *obj, t_point *p2, double t);
 t_point					reflect_ray(t_point n, t_point l);
 t_closest				intersections(t_scene *scene);
-double					ft_light(t_point *p, t_point *n, t_point *v, int s, t_light *light, t_obj *obj);
+double					intersect_cyl_con(t_point *d, t_point *o, t_point *v,
+						t_obj *obj, t_point *p2, double t);
+double					ft_light(t_point pnv[3], int s,
+						t_light *light, t_obj *obj);
 
 
 #endif

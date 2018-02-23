@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/21 14:47:51 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/23 21:16:31 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ t_closest	intersections(t_scene *scene)
 	closest.closest_obj = NULL;
 	closest.c_t = scene->t_max;
 	i = -1;
-	while (++i < 4)
+	while (++i < 8)
 	{
 		if (!ft_strcmp(scene->obj[i].name, "cylinder"))
 			t = raycylinder(scene->o, scene->d, &scene->obj[i]);
@@ -47,29 +47,18 @@ t_closest	intersections(t_scene *scene)
 
 static t_point	v_normal(t_point *p, t_closest *closest)
 {
-	t_point		t;
-	t_point		n;
 	double		scal;
 	t_point		proj;
+	t_point		t;
+	t_point		n;
 	
-	t = (t_point){0, 1, 0};
-	if (!ft_strcmp(closest->closest_obj->name, "cylinder"))
+	if (!ft_strcmp(closest->closest_obj->name, "cylinder") ||
+		!ft_strcmp(closest->closest_obj->name, "cone"))
 	{
+		t = (t_point){0, 1, 0};
 		n = v_sub(p, &closest->closest_obj->c);
 		scal = v_scal(&n, &t);
 		proj = v_mult(&t, scal);
-		n = v_sub(&n, &proj);
-		n = v_mult(&n, 1 / v_len(&n));
-		return (n);
-	}
-	else if (!ft_strcmp(closest->closest_obj->name, "cone"))
-	{
-		n = v_sub(p, &closest->closest_obj->c);
-		scal = v_scal(&n, &t);
-		proj = v_mult(&t, scal);
-		scal = 1 + tan(closest->closest_obj->radius * M_PI / 180) *
-			tan(closest->closest_obj->radius * M_PI / 180);
-		proj = v_mult(&proj, scal);
 		n = v_sub(&n, &proj);
 		n = v_mult(&n, 1 / v_len(&n));
 		return (n);
@@ -83,14 +72,12 @@ static t_point	v_normal(t_point *p, t_closest *closest)
 
 static int	raytrace(t_scene scene)
 {
+	int			color[2];
 	t_closest	closest;
+	t_point		view;
 	t_point		p;
 	t_point		n;
-	t_point		view;
-	int			i;
-
 	t_point		r;
-	int			color[2];
 
 	closest = intersections(&scene);
 	if (!closest.closest_obj)
@@ -100,13 +87,15 @@ static int	raytrace(t_scene scene)
 	n = v_normal(&p, &closest);
 	view = v_mult(scene.d, -1);
 	color[0] = parse_color(0, closest.closest_obj->color,
-		ft_light(&p, &n, &view, closest.closest_obj->specular,
+		ft_light((t_point[3]){p, n, view}, closest.closest_obj->specular,
 			scene.light, scene.obj));
-	// if (deep <= 0 || closest_obj->reflection <= 0)
-	// 	return (color[0]);
-	// r = reflect_ray(view, pn[1]);
-	// color[1] = raytrace(&pn[0], &r, obj, light, deep - 1, 0.001);
-	// color[0] = parse_color(0, color[0], 1 - closest_obj->reflection) + parse_color(0, color[1], closest_obj->reflection);
+	if (scene.deep <= 0 || closest.closest_obj->reflection <= 0)
+		return (color[0]);
+	r = reflect_ray(n, view);
+	color[1] = raytrace((t_scene){&p, &r, closest.closest_obj, scene.light,
+			scene.deep - 1, 0.001, MAX_SIZE});
+	color[0] = parse_color(0, color[0], 1 - closest.closest_obj->reflection) +
+			parse_color(0, color[1], closest.closest_obj->reflection);
 	return (color[0]);
 }
 
@@ -114,31 +103,47 @@ static void	draw_scene(t_mlx *data)
 {
 	int			x;
 	int			y;
-	int 		color;
+	int			i;
+	double		zoom;
+	int			color[1];
+	int			smooth;
 	t_point		d;
-	t_light		light[3];
-	t_obj		obj[4];
+	t_light		light[4];
+	t_obj		obj[8];
 
-	light[0] = (t_light){"ambient", 0.2, (t_point){300, 100, 0}};
-	light[1] = (t_light){"point", 0.6, (t_point){300, 100, 0}};
-	light[2] = (t_light){"direction", 0.2, (t_point){100, 400, 400}};
-	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 500}, (t_point){0, 150, 500}, 90, 0xff0000, 100, 0.2};
-	obj[1] = (t_obj){"sphere", (t_point){200, 0, 400}, (t_point){0, 0, 0}, 100, 0x0000ff, 50, 0.3};
-	obj[2] = (t_obj){"cone",(t_point){-200, -100, 400}, (t_point){-200, 150, 400}, 22.5, 0x00ff00, 100, 0.4};
-	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, -1, 0};
-	// obj[4] = (t_obj){"plane",(t_point){0, 0, 1000}, (t_point){0, 0, 1}, 0, 0x87ceeb, 10, 0};
+	light[0] = (t_light){"ambient", 0.2, (t_point){0, 100, 0}};
+	light[1] = (t_light){"point", 0.2, (t_point){100, 0, 0}};
+	light[3] = (t_light){"point", 0.4, (t_point){-100, 0, 0}};
+	light[2] = (t_light){"direction", 0.2, (t_point){0, 199, 200}};
+	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 300}, (t_point){0, 50, 300}, 45, 0xff0000, 100, 0.5};
+	obj[1] = (t_obj){"sphere", (t_point){100, -50, 200}, (t_point){0, 0, 0}, 50, 0x0000ff, 100, 0.3};
+	obj[2] = (t_obj){"cone",(t_point){-100, -100, 200}, (t_point){-100, 50, 200}, 22.5, 0x00ff00, 100, 0.3};
+	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, 500, 0.3};
+	obj[4] = (t_obj){"plane",(t_point){0, 0, 700}, (t_point){0, 0, -1}, 0, 0x87ceeb, 300, 0};
+	obj[5] = (t_obj){"plane",(t_point){-300, 0, 0}, (t_point){1, 0, 0}, 0, 0x228b22, -1, 0};
+	obj[6] = (t_obj){"plane",(t_point){300, 0, 0}, (t_point){-1, 0, 0}, 0, 0xffd700, -1, 0};
+	obj[7] = (t_obj){"plane",(t_point){0, 200, 0}, (t_point){0, -1, 0}, 0, 0x8b0a50, -1, 0};
+	zoom = 2;
+	smooth = 1;
 	x = -1;
 	while (++x < data->canvas.x)
 	{
 		y = -1;
 		while (++y < data->canvas.y)
 		{
-			d = canvastoviewport((t_point){x - data->canvas.x / 2,
-				data->canvas.y / 2 - y, 0}, data);
-			d = cam_rot((t_point){0, 0, 0}, d);
-			color = raytrace((t_scene){&data->camera, &d, obj,
-				light, 1, 1, MAX_SIZE});
-			data->data_adr[x + y * (int)data->canvas.x] = color;
+			i = 0;
+			for (int row = 0; row < smooth; row++)
+			{
+				for (int col = 0; col < smooth; col++)
+				{
+					d = canvastoviewport((t_point){zoom * (x - data->canvas.x / 2),
+					zoom * (data->canvas.y / 2 - y)}, data);
+					d = cam_rot((t_point){0, 0, 0}, d);
+					color[0] = raytrace((t_scene){&data->camera, &d, obj,
+						light, 1, 1, MAX_SIZE});
+				}
+			}
+			data->data_adr[x + y * (int)data->canvas.x] = color[0];
 		}
 	}
 	mlx_put_image_to_window(data->mlx, data->win, data->image, 0, 0);
@@ -151,14 +156,14 @@ int		main(int ac, char **av)
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
 	data = (t_mlx){.viewport = (t_point){.x = 100, .y = 100}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
-	.camera = (t_point){0, 0, 0}, .d = 50};
+	.camera = (t_point){0, 0, 0}, .d = 100};
 	data.mlx = mlx_init();
 	data.win = mlx_new_window(data.mlx, data.canvas.x, data.canvas.y, "RTv1");
 	data.image = mlx_new_image(data.mlx, data.canvas.x, data.canvas.y);
 	data.data_adr =
 	(t_ui *)mlx_get_data_addr(data.image, &data.bpp, &data.sl, &data.endian);
 	draw_scene(&data);
-	// mlx_mouse_hook(data.win, &mouse_menu, &data);
+	mlx_mouse_hook(data.win, &mouse_action, &data);
 	mlx_key_hook(data.win, &key_action, &data);
 	// mlx_hook(data.win, 6, 0, &preview, &data);
 	mlx_hook(data.win, 17, 0, (int (*)())&exit, &data);
