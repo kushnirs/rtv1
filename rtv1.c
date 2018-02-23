@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/23 21:16:31 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/23 21:25:53 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ static void	draw_scene(t_mlx *data)
 	int			y;
 	int			i;
 	double		zoom;
-	int			color[1];
+	int			color[4];
 	int			smooth;
 	t_point		d;
 	t_light		light[4];
@@ -115,16 +115,16 @@ static void	draw_scene(t_mlx *data)
 	light[1] = (t_light){"point", 0.2, (t_point){100, 0, 0}};
 	light[3] = (t_light){"point", 0.4, (t_point){-100, 0, 0}};
 	light[2] = (t_light){"direction", 0.2, (t_point){0, 199, 200}};
-	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 300}, (t_point){0, 50, 300}, 45, 0xff0000, 100, 0.5};
+	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 400}, (t_point){0, 50, 400}, 45, 0xff0000, 100, 0.5};
 	obj[1] = (t_obj){"sphere", (t_point){100, -50, 200}, (t_point){0, 0, 0}, 50, 0x0000ff, 100, 0.3};
-	obj[2] = (t_obj){"cone",(t_point){-100, -100, 200}, (t_point){-100, 50, 200}, 22.5, 0x00ff00, 100, 0.3};
-	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, 500, 0.3};
-	obj[4] = (t_obj){"plane",(t_point){0, 0, 700}, (t_point){0, 0, -1}, 0, 0x87ceeb, 300, 0};
+	obj[2] = (t_obj){"cone",(t_point){-100, -100, 300}, (t_point){-100, 50, 300}, 22.5, 0x00ff00, 100, 0.3};
+	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, -1, 0};
+	obj[4] = (t_obj){"plane",(t_point){0, 0, 700}, (t_point){0, 0, -1}, 0, 0x87ceeb, -1, 0};
 	obj[5] = (t_obj){"plane",(t_point){-300, 0, 0}, (t_point){1, 0, 0}, 0, 0x228b22, -1, 0};
 	obj[6] = (t_obj){"plane",(t_point){300, 0, 0}, (t_point){-1, 0, 0}, 0, 0xffd700, -1, 0};
 	obj[7] = (t_obj){"plane",(t_point){0, 200, 0}, (t_point){0, -1, 0}, 0, 0x8b0a50, -1, 0};
 	zoom = 2;
-	smooth = 1;
+	smooth = 2;
 	x = -1;
 	while (++x < data->canvas.x)
 	{
@@ -136,14 +136,14 @@ static void	draw_scene(t_mlx *data)
 			{
 				for (int col = 0; col < smooth; col++)
 				{
-					d = canvastoviewport((t_point){zoom * (x - data->canvas.x / 2),
-					zoom * (data->canvas.y / 2 - y)}, data);
+					d = canvastoviewport((t_point){zoom * (x - data->canvas.x / 2 + (row + 0.5) / smooth),
+					zoom * (data->canvas.y / 2 - y + (col + 0.5) / smooth)}, data);
 					d = cam_rot((t_point){0, 0, 0}, d);
-					color[0] = raytrace((t_scene){&data->camera, &d, obj,
+					color[i++] = raytrace((t_scene){&data->camera, &d, obj,
 						light, 1, 1, MAX_SIZE});
 				}
 			}
-			data->data_adr[x + y * (int)data->canvas.x] = color[0];
+			data->data_adr[x + y * (int)data->canvas.x] = average_color(color, smooth);
 		}
 	}
 	mlx_put_image_to_window(data->mlx, data->win, data->image, 0, 0);
