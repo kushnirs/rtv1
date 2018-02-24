@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   rtv1.h                                             :+:      :+:    :+:   */
+/*   rtv1_cl.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/24 16:01:20 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/24 19:08:13 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RTV1_H
-# define RTV1_H
+#ifndef RTV1_CL_H
+# define RTV1_CL_H
 
 # include <math.h>
 # include "SDL2.framework/Headers/SDL.h"
@@ -21,6 +21,13 @@
 
 #include <stdio.h>
 
+# define SPHERE 1
+# define CYLINDER 2
+# define CONE 3
+# define PLANE 3
+# define POINT 1
+# define DIRECTION 2
+# define AMBIENT 3
 # define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define MAX_SIZE 214748367
 # define HIGH	1000
@@ -43,12 +50,14 @@
 # define RIGHT	124
 # define ESC	53
 
-typedef	struct			s_kernel
+typedef	struct			s_host
 {
 	cl_device_id		dev_id;
 	cl_context			context;
 	cl_command_queue	com_queue;
 	cl_mem				memobj;
+	cl_mem				obj;
+	cl_mem				light;
 	cl_program			program;
 	cl_kernel			kernel;
 	cl_platform_id		p_id;
@@ -59,44 +68,44 @@ typedef	struct			s_kernel
 
 typedef struct			s_point
 {
-	double				x;
-	double				y;
-	double				z;
+	float				x;
+	float				y;
+	float				z;
 }						t_point;
 
 typedef struct			s_obj
 {
-	char				name[10];
+	int					name;
 	t_point				c;
 	t_point				d;
-	double				radius;
+	float				radius;
 	int					color;
-	double				specular;
-	double				reflection;
+	float				specular;
+	float				reflection;
 }						t_obj;
 
 typedef struct			s_light
 {
-	char				type[15];
-	double				intensity;
+	int					type;
+	float				intensity;
 	t_point				direction;
 }						t_light;
 
 typedef struct			s_closest
 {
 	t_obj				*closest_obj;
-	double				c_t;
+	float				c_t;
 }						t_closest;
 
 typedef struct			s_scene
 {
-	t_point				*o;
-	t_point				*d;
-	t_obj				*obj;
-	t_light				*light;
+	t_point				o;
+	t_point				d;
+	t_point				canvas;
+	t_point				viewport;
 	int					deep;
-	double				t_min;
-	double				t_max;
+	float				t_min;
+	float				t_max;
 }						t_scene;
 
 typedef struct			s_mlx
@@ -112,48 +121,22 @@ typedef struct			s_mlx
 	int					sl;
 	int					endian;
 	int					d;
-	double				index;
+	float				index;
 	t_host				host;
 }						t_mlx;
+
+void					kernel_param(t_mlx *data, t_scene *scene);
+int						host_fract(char *filename, char *funcname, t_mlx *data, t_scene *scene, t_obj *obj, t_light *light);
 /*
 **	color func
 */
-int						parse_color(int c1, int c2, double t);
+int						parse_color(int c1, int c2, float t);
 int						parse_color_2(int c1, t_ui t);
 int						average_color(int *color, int smooth);
-/*
-**	vector func
-*/
-double					v_scal(t_point *a, t_point *b);
-t_point					v_sub(t_point *a, t_point *b);
-t_point					v_add(t_point *a, t_point *b);
-t_point					v_mult(t_point *a, double num);
-double					v_len(t_point *a);
 /*
 **	handlers
 */
 int						key_action(int key, t_mlx *data);
 int						mouse_action(int button, int x, int y, t_mlx *data);
-/*
-**	utility func
-*/
-t_point					q_equation(double k[3]);
-t_point					cam_rot(t_point rot, t_point coord);
-t_point					canvastoviewport(t_point point, t_mlx *data);
-double					formula(double a, double b, double t);
-/*
-**	ray_obj func
-*/
-t_point					raysphere(t_point *o, t_point *d, t_obj *sphere);
-t_point					rayplane(t_point *o, t_point *d, t_obj *obj);
-t_point					raycylinder(t_point *o, t_point *l, t_obj *sphere);
-t_point					raycone(t_point *o, t_point *d, t_obj *obj);
-t_point					reflect_ray(t_point n, t_point l);
-t_closest				intersections(t_scene *scene);
-double					intersect_cyl_con(t_point *d, t_point *o, t_point *v,
-						t_obj *obj, t_point *p2, double t);
-double					ft_light(t_point pnv[3], int s,
-						t_light *light, t_obj *obj);
-
 
 #endif

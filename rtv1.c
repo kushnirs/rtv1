@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/23 21:25:53 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/24 18:13:45 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,26 +105,26 @@ static void	draw_scene(t_mlx *data)
 	int			y;
 	int			i;
 	double		zoom;
-	int			color[4];
+	int			color[1];
 	int			smooth;
 	t_point		d;
 	t_light		light[4];
 	t_obj		obj[8];
 
 	light[0] = (t_light){"ambient", 0.2, (t_point){0, 100, 0}};
-	light[1] = (t_light){"point", 0.2, (t_point){100, 0, 0}};
-	light[3] = (t_light){"point", 0.4, (t_point){-100, 0, 0}};
-	light[2] = (t_light){"direction", 0.2, (t_point){0, 199, 200}};
+	light[1] = (t_light){"point", 0.3, (t_point){100, 0, 0}};
+	light[3] = (t_light){"point", 0.3, (t_point){-100, 0, 0}};
+	light[2] = (t_light){"direction", 0.2, (t_point){100, 100, 0}};
 	obj[0] = (t_obj){"cylinder", (t_point){0, -100, 400}, (t_point){0, 50, 400}, 45, 0xff0000, 100, 0.5};
 	obj[1] = (t_obj){"sphere", (t_point){100, -50, 200}, (t_point){0, 0, 0}, 50, 0x0000ff, 100, 0.3};
 	obj[2] = (t_obj){"cone",(t_point){-100, -100, 300}, (t_point){-100, 50, 300}, 22.5, 0x00ff00, 100, 0.3};
 	obj[3] = (t_obj){"plane",(t_point){0, -100, 0}, (t_point){0, 1, 0}, 0, 0xd3d3d3, -1, 0};
-	obj[4] = (t_obj){"plane",(t_point){0, 0, 700}, (t_point){0, 0, -1}, 0, 0x87ceeb, -1, 0};
+	obj[4] = (t_obj){"plane",(t_point){0, 0, 1500}, (t_point){0, 0, -1}, 0, 0x87ceeb, -1, 0};
 	obj[5] = (t_obj){"plane",(t_point){-300, 0, 0}, (t_point){1, 0, 0}, 0, 0x228b22, -1, 0};
 	obj[6] = (t_obj){"plane",(t_point){300, 0, 0}, (t_point){-1, 0, 0}, 0, 0xffd700, -1, 0};
 	obj[7] = (t_obj){"plane",(t_point){0, 200, 0}, (t_point){0, -1, 0}, 0, 0x8b0a50, -1, 0};
 	zoom = 2;
-	smooth = 2;
+	smooth = 1;
 	x = -1;
 	while (++x < data->canvas.x)
 	{
@@ -140,7 +140,7 @@ static void	draw_scene(t_mlx *data)
 					zoom * (data->canvas.y / 2 - y + (col + 0.5) / smooth)}, data);
 					d = cam_rot((t_point){0, 0, 0}, d);
 					color[i++] = raytrace((t_scene){&data->camera, &d, obj,
-						light, 1, 1, MAX_SIZE});
+						light, 2, 1, MAX_SIZE});
 				}
 			}
 			data->data_adr[x + y * (int)data->canvas.x] = average_color(color, smooth);
@@ -152,6 +152,32 @@ static void	draw_scene(t_mlx *data)
 int		main(int ac, char **av)
 {
 	t_mlx	data;
+
+	// SDL_Window *window;
+	// SDL_Init(SDL_INIT_VIDEO);
+	// window = SDL_CreateWindow(
+ //        "An SDL2 window",                 
+ //        SDL_WINDOWPOS_UNDEFINED,           
+ //        SDL_WINDOWPOS_UNDEFINED,           
+ //        640,                               
+ //        480,SDL_WINDOW_RESIZABLE);
+ //    if (window == NULL) {
+ //        // In the case that the window could not be made...
+ //        printf("Could not create window: %s\n", SDL_GetError());
+ //        return 1;
+ //    }
+ //    while (1)
+ //    {
+ //    	SDL_Event event;
+ //    	while (SDL_PollEvent(&event))
+ //    	{
+ //    		if (event.key.keysym.sym == SDLK_ESCAPE)
+ //    		{
+ //    			SDL_Quit();
+ //    			return (0);
+ //    		}
+ //        }
+ //    }
 
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
@@ -168,5 +194,4 @@ int		main(int ac, char **av)
 	// mlx_hook(data.win, 6, 0, &preview, &data);
 	mlx_hook(data.win, 17, 0, (int (*)())&exit, &data);
 	mlx_loop(data.mlx);
-	return (0);
 }
