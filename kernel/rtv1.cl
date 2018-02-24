@@ -62,11 +62,8 @@ static int	parse_color(int c1, int c2, double t)
 static int	average_color(int *color, int smooth)
 {
 	int	i;
-	int d[3];
+	int d[3] = {0, 0, 0};
 
-	d[0] = 0;
-	d[1] = 0;
-	d[2] = 0;
 	i = 0;
 	while( i < smooth * smooth)
 	{
@@ -86,7 +83,7 @@ float3	q_equation(float k[3])
 	float3	t;
 	float	disc;
 
-	disc = k[1] * k[1] - 4 * k[0] * k[2];
+	disc = k[1] * k[1] - 4.0f * k[0] * k[2];
 	if (disc < 0)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
 	t.x = (-k[1] + sqrt(disc)) / (2.0f * k[0]);
@@ -186,7 +183,7 @@ float3	raycylinder(float3 o, float3 d, t_obj obj)
 	k[0] = dot(a[0], a[0]);
 	a[1] = v * dot(p, v);
 	a[1] = p - a[1];
-	k[1] = 2 * dot(a[0], a[1]);
+	k[1] = 2.0f * dot(a[0], a[1]);
 	k[2] = dot(a[1], a[1]) - obj.radius * obj.radius;
 	t = q_equation(k);
 	t.x = intersect_cyl_con(d, o, v, obj, obj.d, t.x);
@@ -213,8 +210,8 @@ float3	raycone(float3 o, float3 d, t_obj obj)
 	k[0] -= sin(angle) * sin(angle) * dot(d, v) * dot(d, v);
 	a[1] = v * dot(p, v);
 	a[1] = p - a[1];
-	k[1] = 2 * cos(angle) * cos(angle) * dot(a[0], a[1]);
-	k[1] -= 2 * sin(angle) * sin(angle) * dot(d, v) * dot(p, v);
+	k[1] = 2.0f * cos(angle) * cos(angle) * dot(a[0], a[1]);
+	k[1] -= 2.0f * sin(angle) * sin(angle) * dot(d, v) * dot(p, v);
 	k[2] = cos(angle) * cos(angle) * dot(a[1], a[1]);
 	k[2] -= sin(angle) * sin(angle) * dot(p, v) * dot(p, v);
 	t = q_equation(k);
@@ -280,7 +277,7 @@ float3	ft_light_p_d(float3 pnv[3], t_light light, __constant t_obj *obj)
 	if (light.type == POINT)
 	{
 		l = light.direction - pnv[0];
-		max = 1;
+		max = 1.0f;
 	}
 	else
 	{
@@ -288,7 +285,7 @@ float3	ft_light_p_d(float3 pnv[3], t_light light, __constant t_obj *obj)
 		max = MAX_SIZE;
 	}
 	closest = intersections((t_scene){pnv[0], l, l, l, 0, 0.001, max}, obj);
-	if (closest.closest_obj.color)
+	if (!closest.closest_obj.color)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
 	return (l);
 }
@@ -299,7 +296,7 @@ float	ft_light(float3 pnv[3], int s, __constant t_light *light, __constant t_obj
 	float		i;
 	float3		l;
 
-	i = 0;
+	i = 0.0f;
 	a = -1;
 	while (++a < 4)
 	{
@@ -371,32 +368,33 @@ int	raytrace(t_scene scene, __constant t_obj *obj, __constant t_light *light)
 	closest = intersections(scene, obj);
 	if (!closest.closest_obj.color)
 		return (0);
-	p = scene.o - scene.d * closest.c_t;
-	n = v_normal(p, closest);
-	color[0] = parse_color(0, closest.closest_obj.color,
-		ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
-			light, obj));
-	if (scene.deep <= 0 || closest.closest_obj.reflection <= 0)
-		return (color[0]);
-	r = reflect_ray(n, -scene.d);
+	// p = scene.o - scene.d * closest.c_t;
+	// n = v_normal(p, closest);
+	// color[0] = parse_color(0, closest.closest_obj.color,
+	// 	ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
+	// 		light, obj));
+	// if (scene.deep <= 0 || closest.closest_obj.reflection <= 0)
+	// 	return (color[0]);
+	// r = reflect_ray(n, -scene.d);
 	// color[1] = raytrace((t_scene){p, r, closest.closest_obj, scene.light,
 	// 		scene.deep - 1, 0.001, MAX_SIZE});
 	// color[0] = parse_color(0, color[0], 1 - closest.closest_obj.reflection) +
 	// 		parse_color(0, color[1], closest.closest_obj.reflection);
-	return (color[0]);
+	return (closest.closest_obj.color);
 }
 
+__kernel
 void	draw_scene(__global int *buff, t_scene scene, __constant t_obj *obj, __constant t_light *light)
 {
 	int			x = get_global_id(0);
 	int			y = get_global_id(1);
 	int			i;
 	float		zoom;
-	int			color[4];
+	int			color[1];
 	int			smooth;
 
 	zoom = 2.0f;
-	smooth = 2;
+	smooth = 1;
 
 	i = 0;
 	for (int row = 0; row < smooth; row++)

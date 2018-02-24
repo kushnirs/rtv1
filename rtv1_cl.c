@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/24 19:07:12 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/24 20:01:50 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ int		main(int ac, char **av)
 	data.image = mlx_new_image(data.mlx, data.canvas.x, data.canvas.y);
 	data.data_adr =
 	(t_ui *)mlx_get_data_addr(data.image, &data.bpp, &data.sl, &data.endian);
-	scene = (t_scene){data.camera, (t_point){0,0,0}, data.canvas, data.viewport, 1, 1, MAX_SIZE};
+	scene = (t_scene){data.camera, (t_point){0,0,0}, data.canvas, data.viewport, 1, 1.0f, MAX_SIZE};
 	host_fract("./kernel/rtv1.cl", "draw_scene", &data, &scene, obj, light);
 	mlx_mouse_hook(data.win, &mouse_action, &data);
 	mlx_key_hook(data.win, &key_action, &data);
