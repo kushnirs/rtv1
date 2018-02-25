@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   opencl.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/24 19:54:56 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/25 23:26:34 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void		kernel_param(t_mlx *data, t_scene *scene)
 	(ret = clSetKernelArg(data->host.kernel, 0, sizeof(cl_mem),
 		(void *)&data->host.memobj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 1, sizeof(t_scene),
-		(void *)&scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+		(void *)scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 2, sizeof(cl_mem),
 		(void *)&data->host.obj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 3, sizeof(cl_mem),

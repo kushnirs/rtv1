@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1_cl.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/24 19:08:13 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/25 23:26:45 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
-# define PLANE 3
+# define PLANE 4
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
@@ -113,9 +113,9 @@ typedef struct			s_mlx
 	void				*mlx;
 	void				*win;
 	void				*image;
-	t_point				viewport;
-	t_point				canvas;
 	t_point				camera;
+	t_point				canvas;
+	t_point				viewport;
 	t_ui				*data_adr;
 	int					bpp;
 	int					sl;
@@ -123,6 +123,9 @@ typedef struct			s_mlx
 	int					d;
 	float				index;
 	t_host				host;
+	t_scene				scene;
+	t_obj				*obj;
+	t_light				*light;
 }						t_mlx;
 
 void					kernel_param(t_mlx *data, t_scene *scene);

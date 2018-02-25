@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1_cl.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/24 20:01:50 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/25 23:23:20 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ int		main(int ac, char **av)
 
 	double		zoom;
 	int			smooth;
-	t_point		d;
 	t_light		light[4];
 	t_obj		obj[8];
 	t_scene		scene;
@@ -41,7 +40,7 @@ int		main(int ac, char **av)
 	(void)av;
 	ac != 1 ? exit(ft_printf("Don't panic! Use main menu:)\n")) : 0;
 	data = (t_mlx){.viewport = (t_point){.x = 100, .y = 100}, .canvas = (t_point){.x = WIDTH, .y = HIGH},
-	.camera = (t_point){0, 0, 0}, .d = 100};
+	.camera = (t_point){0, 0, -200}, .d = 100};
 	data.mlx = mlx_init();
 	data.win = mlx_new_window(data.mlx, data.canvas.x, data.canvas.y, "RTv1");
 	data.image = mlx_new_image(data.mlx, data.canvas.x, data.canvas.y);

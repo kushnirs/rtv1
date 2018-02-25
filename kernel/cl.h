@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   cl.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/24 19:55:57 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/25 23:27:22 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CL_H
 # define CL_H
 
-# define MAX_SIZE 214748367
+# define MAX_SIZE 214748360
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
@@ -21,13 +21,6 @@
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
-
-typedef struct			s_point
-{
-	float				x;
-	float				y;
-	float				z;
-}						t_point;
 
 typedef struct			s_obj
 {
@@ -63,15 +56,53 @@ typedef struct			s_scene
 	float				t_min;
 	float				t_max;
 }						t_scene;
+/*
+**	convert
+*/
+typedef struct			s_point
+{
+	float				x;
+	float				y;
+	float				z;
+}						t_point;
 
-int						raytrace(t_scene scene, __constant t_obj *obj, __constant t_light *light);
+typedef struct			s_o
+{
+	int					name;
+	t_point				c;
+	t_point				d;
+	float				radius;
+	int					color;
+	float				specular;
+	float				reflection;
+}						t_o;
+
+typedef struct			s_l
+{
+	int					type;
+	float				intensity;
+	t_point				direction;
+}						t_l;
+
+typedef struct			s_s
+{
+	t_point				o;
+	t_point				d;
+	t_point				canvas;
+	t_point				viewport;
+	int					deep;
+	float				t_min;
+	float				t_max;
+}						t_s;
+
+int						raytrace(t_scene scene, t_obj *obj, t_light *light);
 float3					v_normal(float3 p, t_closest closest);
-t_closest				intersections(t_scene scene, __constant t_obj *obj);
-float					ft_light(float3 pnv[3], int s, __constant t_light *light, __constant t_obj *obj);
-float3					ft_light_p_d(float3 pnv[3], t_light light, __constant t_obj *obj);
+t_closest				intersections(t_scene scene, t_obj *obj);
+float					ft_light(float3 *pnv, int s, t_light *light, t_obj *obj);
+float3					ft_light_p_d(float3 pnv, t_light light, t_obj *obj);
 float					ft_p_d(float3 l, float3 n, float3 v, int s, float intens);
 float3					canvastoviewport(float3 point, t_scene scene);
-void					draw_scene(__global int *buff, t_scene scene, __constant t_obj *obj, __constant t_light *light);
+void					draw_scene(__global int *buff, t_s scene, __constant t_o *obj, __constant t_l *light);
 float3					q_equation(float k[3]);
 /*
 ** ray_obj
