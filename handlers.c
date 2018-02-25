@@ -6,11 +6,11 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/23 10:50:28 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/23 10:58:50 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/25 23:33:27 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv1.h"
+#include "rtv1_cl.h"
 
 int		close_window(t_mlx *data)
 {

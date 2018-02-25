@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
+#    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/24 19:33:00 by skushnir         ###   ########.fr        #
+#    Updated: 2018/02/25 23:32:56 by sergee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
 # SRC = rtv1.c utility.c vector.c ray_obj.c light.c color.c handlers.c
-SRC = rtv1_cl.c color.c handlers.c opencl.c
+SRC = rtv1_cl.c handlers.c opencl.c
 
 # HDR = rtv1.h
 HDR = rtv1_cl.h
