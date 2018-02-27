@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/25 23:26:34 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/26 00:03:30 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,28 +15,30 @@
 #define MAX_SOURCE_SIZE 0x100000
 #define CL_BUILD_PROGRAM_FAILURE -11
 
-void		kernel_param(t_mlx *data, t_scene *scene)
+void		kernel_param(t_mlx *data)
 {
 	cl_int ret;
 
 	(ret = clSetKernelArg(data->host.kernel, 0, sizeof(cl_mem),
-		(void *)&data->host.memobj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	(void *)&data->host.memobj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 1, sizeof(t_scene),
-		(void *)scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+		(void *)&data->scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 2, sizeof(cl_mem),
-		(void *)&data->host.obj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	(void *)&data->host.obj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 3, sizeof(cl_mem),
-		(void *)&data->host.light)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	(void *)&data->host.light)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	ret = clEnqueueNDRangeKernel(data->host.com_queue, data->host.kernel,
-		2, NULL, (size_t[3]){data->canvas.x, data->canvas.y, 0}, NULL, 0, NULL, NULL);
+		2, NULL, (size_t[3]){data->scene.canvas.x, data->scene.canvas.y, 0},
+		NULL, 0, NULL, NULL);
 	ret ? exit(ft_printf("clEnqueueNDRangeKernel Failed\n")) : 0;
 	ret = clEnqueueReadBuffer(data->host.com_queue, data->host.memobj, CL_TRUE,
-	0, data->canvas.x * data->canvas.y * sizeof(int), data->data_adr, 0, NULL, NULL);
+		0, data->scene.canvas.x * data->scene.canvas.y * sizeof(int),
+		data->data_adr, 0, NULL, NULL);
 	ret ? exit(ft_printf("clEnqueueReadBuffer Failed\n")) : 0;
 	mlx_put_image_to_window(data->mlx, data->win, data->image, 0, 0);
 }
 
-static void	host_program(char *funcname, char *str, int size, t_mlx *data, t_scene *scene, t_obj *obj, t_light *light)
+static void	host_program(char *funcname, char *str, int size, t_mlx *data)
 {
 	cl_int	ret;
 
@@ -44,19 +46,19 @@ static void	host_program(char *funcname, char *str, int size, t_mlx *data, t_sce
 		data->host.dev_id, 0, &ret);
 	ret ? exit(ft_printf("clCreateCommandQueue Failed\n")) : 0;
 	data->host.memobj = clCreateBuffer(data->host.context, CL_MEM_READ_WRITE,
-		data->canvas.x * data->canvas.y * sizeof(int), NULL, &ret);
+		data->scene.canvas.x * data->scene.canvas.y * sizeof(int), NULL, &ret);
 	ret ? exit(ft_printf("clCreateBuffer Failed\n")) : 0;
 	data->host.obj = clCreateBuffer(data->host.context, CL_MEM_USE_HOST_PTR,
-		sizeof(obj), obj, &ret);
+		sizeof(data->obj), data->obj, &ret);
 	ret ? exit(ft_printf("clCreateObj Failed\n")) : 0;
 	data->host.light = clCreateBuffer(data->host.context, CL_MEM_USE_HOST_PTR,
-		sizeof(light), light, &ret);
+		sizeof(data->light), data->light, &ret);
 	ret ? exit(ft_printf("clCreateLight Failed\n")) : 0;
 	data->host.program = clCreateProgramWithSource(data->host.context, 1,
 		(const char **)&str, (const size_t *)&size, &ret);
 	ret ? exit(ft_printf("clCreateProgramWithSource Failed\n")) : 0;
 	(ret = clBuildProgram(data->host.program, 1, &data->host.dev_id,
-		"-I ./kernel", NULL, NULL)) ? ft_printf("%d clBuildProgram Failed\n", ret) : 0;
+	"-I ./kernel", NULL, NULL)) ? ft_printf("%dBuildProgram Failed\n", ret) : 0;
 	if (ret == CL_BUILD_PROGRAM_FAILURE)
 	 {
 	    	// ** Determine the size of the log
@@ -73,10 +75,10 @@ static void	host_program(char *funcname, char *str, int size, t_mlx *data, t_sce
 	 }
 	data->host.kernel = clCreateKernel(data->host.program, funcname, &ret);
 	ret ? exit(ft_printf("clCreateKernel Failed\n")) : 0;
-	kernel_param(data, scene);
+	kernel_param(data);
 }
 
-int			host_fract(char *filename, char *funcname, t_mlx *data, t_scene *scene, t_obj *obj, t_light *light)
+int			host_fract(char *filename, char *funcname, t_mlx *data)
 {
 	int		fp;
 	int		size;
@@ -98,7 +100,7 @@ int			host_fract(char *filename, char *funcname, t_mlx *data, t_scene *scene, t_
 	data->host.context = clCreateContext(NULL, 1,
 		&data->host.dev_id, NULL, NULL, &ret);
 	ret ? exit(ft_printf("clCreateContext Failed\n")) : 0;
-	host_program(funcname, str, size, data, scene, obj, light);
+	host_program(funcname, str, size, data);
 	free(str);
 	return (0);
 }

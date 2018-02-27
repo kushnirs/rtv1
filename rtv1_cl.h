@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/25 23:26:45 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/26 19:45:32 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@
 
 #include <stdio.h>
 
+# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
+# define B_SIZE	10000
+# define S 0
+# define L 2
+# define O 1
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
@@ -28,7 +33,6 @@
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
-# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define MAX_SIZE 214748367
 # define HIGH	1000
 # define WIDTH	1000
@@ -101,6 +105,7 @@ typedef struct			s_scene
 {
 	t_point				o;
 	t_point				d;
+	t_point				cam_rot;
 	t_point				canvas;
 	t_point				viewport;
 	int					deep;
@@ -113,9 +118,6 @@ typedef struct			s_mlx
 	void				*mlx;
 	void				*win;
 	void				*image;
-	t_point				camera;
-	t_point				canvas;
-	t_point				viewport;
 	t_ui				*data_adr;
 	int					bpp;
 	int					sl;
@@ -128,8 +130,9 @@ typedef struct			s_mlx
 	t_light				*light;
 }						t_mlx;
 
-void					kernel_param(t_mlx *data, t_scene *scene);
-int						host_fract(char *filename, char *funcname, t_mlx *data, t_scene *scene, t_obj *obj, t_light *light);
+void					parse_param(char *filename, t_mlx *data);
+void					kernel_param(t_mlx *data);
+int						host_fract(char *filename, char *funcname, t_mlx *data);
 /*
 **	color func
 */

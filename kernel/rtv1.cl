@@ -13,7 +13,7 @@
 #include "cl.h"
 /*
 **
-**	CONVERT
+***********************************CONVERT**************************************
 **
 */
 static	void	convert_obj(__constant t_o *o, t_obj *obj, int num)
@@ -47,6 +47,7 @@ static	t_scene	convert_scene(t_s s)
 
 	scene.o = (float3){s.o.x, s.o.y, s.o.z};
 	scene.d = (float3){s.d.x, s.d.y, s.d.z};
+	scene.cam_rot = (float3){s.cam_rot.x, s.cam_rot.y, s.cam_rot.z};
 	scene.canvas = (float3){s.canvas.x, s.canvas.y, s.canvas.z};
 	scene.viewport = (float3){s.viewport.x, s.viewport.y, s.viewport.z};
 	scene.deep = s.deep;
@@ -56,7 +57,7 @@ static	t_scene	convert_scene(t_s s)
 }
 /*
 **
-**	UTILITY
+***********************************UTILITY**************************************
 **
 */
 static float3	reflect_ray(float3 n, float3 l)
@@ -166,7 +167,7 @@ float3	v_normal(float3 p, t_closest closest)
 }
 /*
 **
-**	RAY_OBJ
+***********************************RAY_OBJ**************************************
 **
 */
 
@@ -276,7 +277,7 @@ float3	rayplane(float3 o, float3 d, t_obj obj)
 }
 /*
 **
-**	LIGHT
+***********************************LIGHT****************************************
 **
 */
 
@@ -315,7 +316,8 @@ float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj)
 		l = light.direction;
 		max = MAX_SIZE;
 	}
-	closest = intersections((t_scene){pnv, l, l, l, 0, 0.001, max}, obj);
+	closest = intersections((t_scene){pnv, l, (float3){0,0,0}, (float3){0,0,0},
+		(float3){0,0,0}, 0, 0.001, max}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
 	return (l);
@@ -345,7 +347,7 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj)
 }
 /*
 **
-**	MAIN
+***********************************MAIN*****************************************
 **
 */
 
@@ -401,7 +403,7 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	if (scene.deep <= 0 || closest.closest_obj.reflection <= 0)
 		return (color[0]);
 	r = reflect_ray(n, -scene.d);
-	color[1] = raytrace((t_scene){p, r, scene.canvas, scene.viewport,
+	color[1] = raytrace((t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
 			scene.deep - 1, 0.001, MAX_SIZE}, obj, light);
 	color[0] = parse_color(0, color[0], 1 - closest.closest_obj.reflection) +
 			parse_color(0, color[1], closest.closest_obj.reflection);
@@ -434,7 +436,7 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 		{
 			scene.d = canvastoviewport((float3){x - scene.canvas.x / 2.0f + (row + 0.5f) / smooth,
 			scene.canvas.y / 2.0f - y + (col + 0.5f) / smooth, 0}, scene);
-			scene.d = cam_rot((float3){0, 0, 0}, scene.d);
+			scene.d = cam_rot(scene.cam_rot, scene.d);
 			color[i++] = raytrace(scene, obj, light);
 		}
 	}

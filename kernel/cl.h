@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/25 23:27:22 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/25 23:51:50 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ typedef struct			s_scene
 {
 	float3				o;
 	float3				d;
+	float3				cam_rot;
 	float3				canvas;
 	float3				viewport;
 	int					deep;
@@ -88,6 +89,7 @@ typedef struct			s_s
 {
 	t_point				o;
 	t_point				d;
+	t_point				cam_rot;
 	t_point				canvas;
 	t_point				viewport;
 	int					deep;
