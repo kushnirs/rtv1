@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/26 17:42:31 by skushnir          #+#    #+#             */
-/*   Updated: 2018/01/11 20:36:01 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/27 12:25:43 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@
 # include <unistd.h>
 # include <stdlib.h>
 
-# define BUFF_SIZE 128
+#include <stdio.h>
+
+# define BUFF_SIZE 32
 
 typedef struct	s_list
 {

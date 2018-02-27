@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/30 13:07:28 by skushnir          #+#    #+#             */
-/*   Updated: 2018/01/04 15:50:44 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/27 14:41:47 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,27 +49,29 @@ static t_list	*ft_check_fd(int fd, t_list **descr)
 
 int				get_next_line(const int fd, char **line)
 {
-	int				i;
+	size_t			i;
 	char			buff[BUFF_SIZE + 1];
 	t_list			*tmp;
 	char			*tm_;
 	static t_list	*descr;
 
+	tm_ = NULL;
 	if (fd < 0 || !line || !(tmp = ft_check_fd(fd, &descr))
 		|| ft_read_fd(fd, tmp, buff) == -1)
 		return (-1);
 	*line = NULL;
 	if (!*(char *)tmp->content)
 		return (0);
-	i = (int)ft_strlen(tmp->content);
+	i = ft_strlen(tmp->content);
 	if (ft_strchr(tmp->content, '\n'))
 		i = i - ft_strlen(ft_strchr(tmp->content, '\n'));
+	printf("%zu\n", i);
 	if (!(*line = ft_strsub(tmp->content, 0, i)))
 		return (-1);
 	tm_ = tmp->content;
 	if (ft_strchr(tm_ + i, '\n') && !(tmp->content = ft_strdup(tm_ + i + 1)))
 		return (-1);
-	ft_bzero(tm_, ft_strlen(tm_));
+	ft_bzero(tm_, ft_strlen(tm_) + 1);
 	ft_memdel((void **)&tm_);
 	return (1);
 }
