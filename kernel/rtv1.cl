@@ -192,8 +192,7 @@ float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float3 p2, floa
 
 	if (t < 0)
 		return (MAX_SIZE);
-	p = d * t;
-	p = o + p;
+	p = d * t + o;
 	a = p - obj.c;
 	k[0] = dot(v, a);
 	a = p - p2;
@@ -211,14 +210,11 @@ float3	raycylinder(float3 o, float3 d, t_obj obj)
 	float3	a[2];
 	float	k[3];
 
-	v = obj.d - obj.c;
-	v = v / length(v);
+	v = (obj.d - obj.c) / length(obj.d - obj.c);
 	p = o - obj.c;
-	a[0] = v * dot(d, v);
-	a[0] = d - a[0];
+	a[0] = d - v * dot(d, v);
 	k[0] = dot(a[0], a[0]);
-	a[1] = v * dot(p, v);
-	a[1] = p - a[1];
+	a[1] = p - v * dot(p, v);
 	k[1] = 2.0f * dot(a[0], a[1]);
 	k[2] = dot(a[1], a[1]) - obj.radius * obj.radius;
 	t = q_equation(k);
@@ -237,15 +233,13 @@ float3	raycone(float3 o, float3 d, t_obj obj)
 	float	k[3];
 
 	angle = M_PI * obj.radius / 180;
-	v = obj.d - obj.c;
-	v = v / length(v);
+	v = (obj.d - obj.c) / length(obj.d - obj.c);
 	p = o - obj.d;
 	a[0] = v * dot(d, v);
 	a[0] = d - a[0];
 	k[0] = cos(angle) * cos(angle) * dot(a[0], a[0]);
 	k[0] -= sin(angle) * sin(angle) * dot(d, v) * dot(d, v);
-	a[1] = v * dot(p, v);
-	a[1] = p - a[1];
+	a[1] = p - v * dot(p, v);
 	k[1] = 2.0f * cos(angle) * cos(angle) * dot(a[0], a[1]);
 	k[1] -= 2.0f * sin(angle) * sin(angle) * dot(d, v) * dot(p, v);
 	k[2] = cos(angle) * cos(angle) * dot(a[1], a[1]);

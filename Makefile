@@ -6,14 +6,14 @@
 #    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/28 00:23:09 by sergee           ###   ########.fr        #
+#    Updated: 2018/02/28 21:04:51 by sergee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
 # SRC = rtv1.c utility.c vector.c ray_obj.c light.c color.c handlers.c
-SRC = rtv1_cl.c handlers.c opencl.c parse.c
+SRC = rtv1_cl.c handlers.c opencl.c parse.c check.c
 
 # HDR = rtv1.h
 HDR = rtv1_cl.h

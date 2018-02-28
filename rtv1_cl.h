@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 13:05:42 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/28 21:04:36 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,9 +130,15 @@ typedef struct			s_mlx
 	t_light				*light;
 }						t_mlx;
 
+/*
+**	main func
+*/
 void					parse_param(char *filename, t_mlx *data);
 void					kernel_param(t_mlx *data);
 int						host_fract(char *filename, char *funcname, t_mlx *data);
+int						check_float(char *str, float *res);
+int						check_coord(char *str, t_point *res);
+int						check_int(char *str, int *res);
 /*
 **	color func
 */
