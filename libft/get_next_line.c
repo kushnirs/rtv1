@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/30 13:07:28 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/27 14:41:47 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/28 02:41:09 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ static int		ft_read_fd(int fd, t_list *tmp, char *buff)
 	int		fin;
 	char	*tm_;
 
+	tm_ = NULL;
 	fin = 0;
 	while (!ft_strchr(tmp->content, '\n')
 		&& (fin = read(fd, buff, BUFF_SIZE)) > 0)
@@ -65,13 +66,10 @@ int				get_next_line(const int fd, char **line)
 	i = ft_strlen(tmp->content);
 	if (ft_strchr(tmp->content, '\n'))
 		i = i - ft_strlen(ft_strchr(tmp->content, '\n'));
-	printf("%zu\n", i);
 	if (!(*line = ft_strsub(tmp->content, 0, i)))
 		return (-1);
 	tm_ = tmp->content;
-	if (ft_strchr(tm_ + i, '\n') && !(tmp->content = ft_strdup(tm_ + i + 1)))
-		return (-1);
-	ft_bzero(tm_, ft_strlen(tm_) + 1);
+	tmp->content = ft_strchr(tm_ + i, '\n')  ? ft_strdup(tm_ + i + 1) : ft_strdup(tm_ + i);
 	ft_memdel((void **)&tm_);
-	return (1);
+	return (tmp->content ? 1 : -1);
 }

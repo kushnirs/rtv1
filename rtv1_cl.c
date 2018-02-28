@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1_cl.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/27 10:46:37 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/02/28 13:15:59 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,67 @@ int		main(int ac, char **av)
 	// data.light = light;
 	ac != 2 ? exit(ft_printf("Usage: ./RTv1 filename\n")) : 0;
 	parse_param(av[1], &data);
-	// data.mlx = mlx_init();
-	// data.win = mlx_new_window(data.mlx, data.scene.canvas.x, data.scene.canvas.y, "RTv1");
-	// data.image = mlx_new_image(data.mlx, data.scene.canvas.x, data.scene.canvas.y);
-	// data.data_adr =
-	// (t_ui *)mlx_get_data_addr(data.image, &data.bpp, &data.sl, &data.endian);
-	// host_fract("./kernel/rtv1.cl", "draw_scene", &data);
-	// mlx_mouse_hook(data.win, &mouse_action, &data);
-	// mlx_key_hook(data.win, &key_action, &data);
-	// // mlx_hook(data.win, 6, 0, &preview, &data);
-	// mlx_hook(data.win, 17, 0, (int (*)())&exit, &data);
-	// mlx_loop(data.mlx);
+	// printf("%d\n", data.light[0].type);
+	// printf("%f\n", data.light[0].intensity);
+	// printf("%f\n", data.light[0].direction.x);
+	// printf("%f\n", data.light[0].direction.y);
+	// printf("%f\n\n", data.light[0].direction.z);
+
+	// printf("%d\n", data.light[1].type);
+	// printf("%f\n", data.light[1].intensity);
+	// printf("%f\n", data.light[1].direction.x);
+	// printf("%f\n", data.light[1].direction.y);
+	// printf("%f\n\n", data.light[1].direction.z);
+
+	// printf("%d\n", data.light[2].type);
+	// printf("%f\n", data.light[2].intensity);
+	// printf("%f\n", data.light[2].direction.x);
+	// printf("%f\n", data.light[2].direction.y);
+	// printf("%f\n\n", data.light[2].direction.z);
+
+	// printf("%d\n", data.light[3].type);
+	// printf("%f\n", data.light[3].intensity);
+	// printf("%f\n", data.light[3].direction.x);
+	// printf("%f\n", data.light[3].direction.y);
+	// printf("%f\n\n", data.light[3].direction.z);
+
+	// printf("%d\n", data.obj.name);
+	// printf("%f\n", data.obj.c.x);
+	// printf("%f\n", data.obj.c.y);
+	// printf("%f\n", data.obj.c.z);
+	// printf("%f\n", data.obj.d.x);
+	// printf("%f\n", data.obj.d.y);
+	// printf("%f\n", data.obj.d.z);
+	// printf("%f\n", data.obj.radius);
+	// printf("%d\n", data.obj.color);
+	// printf("%f\n", data.obj.specular);
+	// printf("%f\n\n", data.obj.reflection);
+
+
+	// printf("%f\n", data.scene.o.x);
+	// printf("%f\n", data.scene.o.y);
+	// printf("%f\n", data.scene.o.z);
+	// printf("%f\n", data.scene.d.x);
+	// printf("%f\n", data.scene.d.y);
+	// printf("%f\n", data.scene.d.z);
+	// printf("%f\n", data.scene.cam_rot.x);
+	// printf("%f\n", data.scene.cam_rot.y);
+	// printf("%f\n", data.scene.cam_rot.z);
+	// printf("%f\n", data.scene.canvas.x);
+	// printf("%f\n", data.scene.canvas.y);
+	// printf("%f\n", data.scene.canvas.z);
+	// printf("%d\n", data.scene.deep);
+
+	data.mlx = mlx_init();
+	data.win = mlx_new_window(data.mlx, data.scene.canvas.x, data.scene.canvas.y, "RTv1");
+	data.image = mlx_new_image(data.mlx, data.scene.canvas.x, data.scene.canvas.y);
+	data.data_adr =
+	(t_ui *)mlx_get_data_addr(data.image, &data.bpp, &data.sl, &data.endian);
+	host_fract("./kernel/rtv1.cl", "draw_scene", &data);
+	mlx_mouse_hook(data.win, &mouse_action, &data);
+	mlx_key_hook(data.win, &key_action, &data);
+	// mlx_hook(data.win, 6, 0, &preview, &data);
+	mlx_hook(data.win, 17, 0, (int (*)())&exit, &data);
+	mlx_loop(data.mlx);
 	return (0);
 }

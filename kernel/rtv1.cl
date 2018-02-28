@@ -145,7 +145,6 @@ float3	canvastoviewport(float3 point, t_scene scene)
 
 float3	v_normal(float3 p, t_closest closest)
 {
-	float		scal;
 	float3		proj;
 	float3		t = {0.0f, 1.0f, 0.0f};
 	float3		n;
@@ -153,8 +152,7 @@ float3	v_normal(float3 p, t_closest closest)
 	if (closest.closest_obj.name == CYLINDER || closest.closest_obj.name == CONE)
 	{
 		n = p - closest.closest_obj.c;
-		scal = dot(n, t);
-		proj = t * scal;
+		proj = t * dot(n, t);
 		n = n - proj;
 		n = n / length(n);
 		return (n);
@@ -416,6 +414,8 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	int			x = get_global_id(0);
 	int			y = get_global_id(1);
 	int			i;
+	int			row;
+	int			col;
 	int			color[4];
 	int			smooth;
 	t_scene		scene;
@@ -430,9 +430,11 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 
 	smooth = 2;
 	i = 0;
-	for (int row = 0; row < smooth; row++)
+	row = -1;
+	while (++row < smooth)
 	{
-		for (int col = 0; col < smooth; col++)
+		col = -1;
+		while(++col < smooth)
 		{
 			scene.d = canvastoviewport((float3){x - scene.canvas.x / 2.0f + (row + 0.5f) / smooth,
 			scene.canvas.y / 2.0f - y + (col + 0.5f) / smooth, 0}, scene);
