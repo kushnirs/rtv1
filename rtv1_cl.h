@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 21:04:36 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/28 22:08:59 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,8 @@ typedef struct			s_scene
 	int					deep;
 	float				t_min;
 	float				t_max;
+	int					n_o;
+	int					n_l;
 }						t_scene;
 
 typedef struct			s_mlx

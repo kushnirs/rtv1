@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cl.h"
+#include "my_cl.h"
 /*
 **
 ***********************************CONVERT**************************************
@@ -53,6 +53,8 @@ static	t_scene	convert_scene(t_s s)
 	scene.deep = s.deep;
 	scene.t_min = s.t_min;
 	scene.t_max = s.t_max;
+	scene.n_o = s.n_o;
+	scene.n_l = s.n_l;
 	return (scene);
 }
 /*
@@ -69,23 +71,30 @@ static float3	reflect_ray(float3 n, float3 l)
 
 static float3	cam_rot(float3 rot, float3 coord)
 {
+	float3	angle;
 	float3	p[3];
 	float	func[6];
 
-	func[0] = cos(M_PI * rot.x / 180);
-	func[1] = sin(M_PI * rot.x / 180);
-	func[2] = cos(M_PI * rot.y / 180);
-	func[3] = sin(M_PI * rot.y / 180);
-	func[4] = cos(M_PI * rot.z / 180);
-	func[5] = sin(M_PI * rot.z / 180);
+	angle.x = M_PI * rot.x / 180;
+	func[0] = cos(angle.x);
+	func[1] = sin(angle.x);
+	angle.y = M_PI * rot.y / 180;
+	func[2] = cos(angle.y);
+	func[3] = sin(angle.y);
+	angle.z = M_PI * rot.z / 180;
+	func[4] = cos(angle.z);
+	func[5] = sin(angle.z);
+
 	p[0].x = coord.x;
 	p[0].y = coord.y * func[0] + coord.z * func[1];
 	p[0].z = coord.z * func[0] - coord.y * func[1];
+
 	p[1].x = p[0].x * func[2] + p[0].z * func[3];
 	p[1].y = p[0].y;
 	p[1].z = p[0].z * func[2] - p[0].x * func[3];
-	p[2].x = p[1].x * func[4] - p[1].y * func[5];
-	p[2].y = p[1].x * func[5] + p[1].y * func[4];
+
+	p[2].x = p[1].x * func[4] + p[1].y * func[5];
+	p[2].y = p[1].y * func[4] - p[1].x * func[5];
 	p[2].z = p[1].z;
 	return (p[2]);
 }
@@ -168,12 +177,10 @@ float3	v_normal(float3 p, t_closest closest)
 ***********************************RAY_OBJ**************************************
 **
 */
-
 float3	raysphere(float3 o, float3 d, t_obj obj)
 {
 	float3	oc;
 	float3	t;
-	float	disc;
 	float	k[3];
 
 	oc = o - obj.c;
@@ -272,7 +279,6 @@ float3	rayplane(float3 o, float3 d, t_obj obj)
 ***********************************LIGHT****************************************
 **
 */
-
 float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 {
 	float		rv;
@@ -292,7 +298,7 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 	return (i);
 }
 
-float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj)
+float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
 {
 	t_closest	closest;
 	float		max;
@@ -309,13 +315,13 @@ float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj)
 		max = MAX_SIZE;
 	}
 	closest = intersections((t_scene){pnv, l, (float3){0,0,0}, (float3){0,0,0},
-		(float3){0,0,0}, 0, 0.001, max}, obj);
+		(float3){0,0,0}, 0, 0.001, max, n_o, n_l}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
 	return (l);
 }
 
-float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj)
+float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 {
 	int			a;
 	float		i;
@@ -323,13 +329,13 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj)
 
 	i = 0.0f;
 	a = -1;
-	while (++a < 4)
+	while (++a < n_l)
 	{
 		if (light[a].type == AMBIENT)
 			i += light[a].intensity;
 		else
 		{
-			l = ft_light_p_d(pnv[0], light[a], obj);
+			l = ft_light_p_d(pnv[0], light[a], obj, n_o, n_l);
 			if (l.x != MAX_SIZE && l.y != MAX_SIZE)
 				i += ft_p_d(l, pnv[1], pnv[2], s, light[a].intensity);
 		}
@@ -342,7 +348,6 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj)
 ***********************************MAIN*****************************************
 **
 */
-
 t_closest	intersections(t_scene scene, t_obj *obj)
 {
 	t_closest	closest;
@@ -352,7 +357,7 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 	closest.closest_obj.color = 0;
 	closest.c_t = scene.t_max;
 	i = -1;
-	while (++i < 8)
+	while (++i < scene.n_o)
 	{
 		if (obj[i].name == CYLINDER)
 			t = raycylinder(scene.o, scene.d, obj[i]);
@@ -391,12 +396,12 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	n = v_normal(p, closest);
 	color[0] = parse_color(0, closest.closest_obj.color,
 		ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
-			light, obj));
+			light, obj, scene.n_o, scene.n_l));
 	if (scene.deep <= 0 || closest.closest_obj.reflection <= 0)
 		return (color[0]);
 	r = reflect_ray(n, -scene.d);
 	color[1] = raytrace((t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-			scene.deep - 1, 0.001, MAX_SIZE}, obj, light);
+			scene.deep - 1, 0.001, MAX_SIZE, scene.n_o, scene.n_l}, obj, light);
 	color[0] = parse_color(0, color[0], 1 - closest.closest_obj.reflection) +
 			parse_color(0, color[1], closest.closest_obj.reflection);
 	return (color[0]);
@@ -413,14 +418,12 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	int			color[4];
 	int			smooth;
 	t_scene		scene;
-	t_light		*light;
-	t_obj		*obj;
+	t_light		light[10];
+	t_obj		obj[10];
 
-	obj = (t_obj*)malloc(sizeof(t_obj) * 8);
-	light = (t_light*)malloc(sizeof(t_light) * 4);
 	scene = convert_scene(s);
-	convert_obj(o, obj, 8);
-	convert_light(l, light, 4);
+	convert_obj(o, obj, scene.n_o);
+	convert_light(l, light, scene.n_l);
 
 	smooth = 2;
 	i = 0;

@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 21:02:48 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/28 22:10:10 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,8 @@ static void	read_param(char *filename, t_mlx *data, int *num, int fd)
 	int		gnl;
 	char	*line;
 
+	data->scene.n_o = num[O];
+	data->scene.n_l = num[L];	
 	num[O] ? data->obj = (t_obj*)malloc(sizeof(t_obj) * (num[O] + 1)) : 0;
 	num[L] ? data->light = (t_light*)malloc(sizeof(t_light) * (num[L] + 1)) : 0;
 	if ((fd = open(filename, O_RDONLY)) == -1)

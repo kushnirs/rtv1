@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cl.h                                               :+:      :+:    :+:   */
+/*   my_cl.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/25 23:51:50 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/28 22:33:19 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ typedef struct			s_scene
 	int					deep;
 	float				t_min;
 	float				t_max;
+	int					n_o;
+	int					n_l;
 }						t_scene;
 /*
 **	convert
@@ -95,13 +97,15 @@ typedef struct			s_s
 	int					deep;
 	float				t_min;
 	float				t_max;
+	int					n_o;
+	int					n_l;
 }						t_s;
 
 int						raytrace(t_scene scene, t_obj *obj, t_light *light);
 float3					v_normal(float3 p, t_closest closest);
 t_closest				intersections(t_scene scene, t_obj *obj);
-float					ft_light(float3 *pnv, int s, t_light *light, t_obj *obj);
-float3					ft_light_p_d(float3 pnv, t_light light, t_obj *obj);
+float					ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l);
+float3					ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l);
 float					ft_p_d(float3 l, float3 n, float3 v, int s, float intens);
 float3					canvastoviewport(float3 point, t_scene scene);
 void					draw_scene(__global int *buff, t_s scene, __constant t_o *obj, __constant t_l *light);
