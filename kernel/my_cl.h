@@ -6,7 +6,7 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 22:33:19 by sergee           ###   ########.fr       */
+/*   Updated: 2018/02/28 22:57:22 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,12 @@ typedef struct			s_closest
 	t_obj				closest_obj;
 	float				c_t;
 }						t_closest;
+
+typedef struct			s_color
+{
+	int					color;
+	float				reflection;
+}						t_color;
 
 typedef struct			s_scene
 {

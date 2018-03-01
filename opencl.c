@@ -6,16 +6,16 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/26 00:03:30 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 00:15:04 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv1_cl.h"
+#include "rtv1.h"
 
-#define MAX_SOURCE_SIZE 0x100000
+#define MAX_SOURCE_SIZE 12000
 #define CL_BUILD_PROGRAM_FAILURE -11
 
-void		kernel_param(t_mlx *data)
+void		kernel_param(t_sdl *data)
 {
 	cl_int ret;
 
@@ -33,12 +33,11 @@ void		kernel_param(t_mlx *data)
 	ret ? exit(ft_printf("clEnqueueNDRangeKernel Failed\n")) : 0;
 	ret = clEnqueueReadBuffer(data->host.com_queue, data->host.memobj, CL_TRUE,
 		0, data->scene.canvas.x * data->scene.canvas.y * sizeof(int),
-		data->data_adr, 0, NULL, NULL);
+		data->pixel, 0, NULL, NULL);
 	ret ? exit(ft_printf("clEnqueueReadBuffer Failed\n")) : 0;
-	mlx_put_image_to_window(data->mlx, data->win, data->image, 0, 0);
 }
 
-static void	host_program(char *funcname, char *str, int size, t_mlx *data)
+static void	host_program(char *funcname, char *str, int size, t_sdl *data)
 {
 	cl_int	ret;
 
@@ -59,26 +58,26 @@ static void	host_program(char *funcname, char *str, int size, t_mlx *data)
 	ret ? exit(ft_printf("clCreateProgramWithSource Failed\n")) : 0;
 	(ret = clBuildProgram(data->host.program, 1, &data->host.dev_id,
 	"-I ./kernel", NULL, NULL)) ? ft_printf("%dBuildProgram Failed\n", ret) : 0;
-	if (ret == CL_BUILD_PROGRAM_FAILURE)
-	 {
-	    	// ** Determine the size of the log
-	    	size_t log_size;
-	    	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
-			CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-	    	// ** Allocate memory for the log
-	    	char *log = (char *) malloc(log_size);
-	    	// ** Get the log
-	    	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
-			CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
-	    	// ** Print the log
-	    	printf("%s\n", log);
-	 }
+	// if (ret == CL_BUILD_PROGRAM_FAILURE)
+	//  {
+	//     	// ** Determine the size of the log
+	//     	size_t log_size;
+	//     	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
+	// 		CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+	//     	// ** Allocate memory for the log
+	//     	char *log = (char *) malloc(log_size);
+	//     	// ** Get the log
+	//     	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
+	// 		CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+	//     	// ** Print the log
+	//     	printf("%s\n", log);
+	//  }
 	data->host.kernel = clCreateKernel(data->host.program, funcname, &ret);
 	ret ? exit(ft_printf("clCreateKernel Failed\n")) : 0;
 	kernel_param(data);
 }
 
-int			host_fract(char *filename, char *funcname, t_mlx *data)
+int			host_fract(char *filename, char *funcname, t_sdl *data)
 {
 	int		fp;
 	int		size;
@@ -101,7 +100,7 @@ int			host_fract(char *filename, char *funcname, t_mlx *data)
 		&data->host.dev_id, NULL, NULL, &ret);
 	ret ? exit(ft_printf("clCreateContext Failed\n")) : 0;
 	host_program(funcname, str, size, data);
-	free(str);
+	ft_memdel((void**)&str);
 	return (0);
 }
 /*

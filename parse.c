@@ -6,11 +6,11 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 22:10:10 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/01 23:52:55 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv1_cl.h"
+#include "rtv1.h"
 
 static void	parse_light(char *line, t_light *light)
 {
@@ -49,17 +49,17 @@ static void	parse_scene(char *line, t_scene *scene)
 	line[6] != '{' ? exit(ft_printf("Wrong object parameter\n")) : 0;
 	i = 7;
 	i += check_coord(&line[i], &scene->o);
-	i += check_coord(&line[i], &scene->d);
 	i += check_coord(&line[i], &scene->cam_rot);
 	i += check_coord(&line[i], &scene->canvas);
 	i += check_int(&line[i], &scene->deep);
 	line[i] ? exit(ft_printf("missing parameter /0\n")) : 0;
+	scene->d = (t_point){0, 0, 0};
 	scene->t_min = 1;
 	scene->t_max = MAX_SIZE;
 	scene->viewport = (t_point){100, 100, 0};
 }
 
-static void	read_param(char *filename, t_mlx *data, int *num, int fd)
+static void	read_param(char *filename, t_sdl *data, int *num, int fd)
 {
 	int		i;
 	int		gnl;
@@ -67,8 +67,8 @@ static void	read_param(char *filename, t_mlx *data, int *num, int fd)
 
 	data->scene.n_o = num[O];
 	data->scene.n_l = num[L];	
-	num[O] ? data->obj = (t_obj*)malloc(sizeof(t_obj) * (num[O] + 1)) : 0;
-	num[L] ? data->light = (t_light*)malloc(sizeof(t_light) * (num[L] + 1)) : 0;
+	num[O] ? data->obj = (t_obj*)malloc(sizeof(t_obj) * (num[O])) : 0;
+	num[L] ? data->light = (t_light*)malloc(sizeof(t_light) * (num[L])) : 0;
 	if ((fd = open(filename, O_RDONLY)) == -1)
 		exit(ft_printf("No file %s\n", filename));
 	while ((gnl = get_next_line(fd, &line)) > 0)
@@ -85,7 +85,7 @@ static void	read_param(char *filename, t_mlx *data, int *num, int fd)
 	close(fd);
 }
 
-void	parse_param(char *filename, t_mlx *data)
+void	parse_param(char *filename, t_sdl *data)
 {
 	int		fd;
 	int		gnl;

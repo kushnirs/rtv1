@@ -6,11 +6,11 @@
 /*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/28 21:02:22 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 21:03:09 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/01 11:12:34 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv1_cl.h"
+#include "rtv1.h"
 
 int	check_float(char *str, float *res)
 {

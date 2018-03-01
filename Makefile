@@ -6,26 +6,25 @@
 #    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/02/28 21:24:27 by sergee           ###   ########.fr        #
+#    Updated: 2018/03/01 20:04:28 by sergee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = RTv1
 
-# SRC = rtv1.c utility.c vector.c ray_obj.c light.c color.c handlers.c
-SRC = rtv1_cl.c handlers.c opencl.c parse.c check.c
+SRC = rtv1.c handlers.c opencl.c parse.c check.c utility.c
 
-# HDR = rtv1.h
-HDR = rtv1_cl.h
+HDR = rtv1.h
 
-LIB = libft/libft.a minilibx/libmlx.a
+LIB = libft/libft.a
 
 OBJ = $(SRC:.c=.o)
 
 all:lib $(NAME)
 
 $(NAME): $(OBJ) $(HDR) $(LIB)
-	gcc  -O3 -o $(NAME) $(OBJ) $(LIB) -F. -rpath . -framework OpenGl -framework AppKit -framework opencl -framework SDL2
+	gcc  -O3 -o $(NAME) $(OBJ) $(LIB) -F. -rpath . -framework OpenGl	\
+	-framework AppKit -framework opencl -framework SDL2 -framework SDL2_ttf
 
 .c.o:
 	gcc  -O3 -c $< -F.

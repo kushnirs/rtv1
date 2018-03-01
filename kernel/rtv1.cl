@@ -112,6 +112,21 @@ static int	parse_color(int c1, int c2, float t)
 	return (dr * 0x10000 + dg * 0x100 + db);
 }
 
+static int	refl_color(t_color *color, int deep)
+{
+	int	i;
+
+	// printf("%f ", color[0].reflection);
+	i = 0;
+	while(i < deep)
+	{
+		color[i + 1].color = parse_color(0, color[i + 1].color, 1 - color[i + 1].reflection) +
+			parse_color(0, color[i].color, color[i + 1].reflection);
+		i++;
+	}
+	return (color[i].color);
+}
+
 static int	average_color(int *color, int smooth)
 {
 	int	i;
@@ -383,28 +398,35 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 
 int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 {
-	int			color[2];
+	t_color		color[scene.deep + 1];
 	t_closest	closest;
 	float3		p;
 	float3		n;
 	float3		r;
+	int			deep = scene.deep;
 
-	closest = intersections(scene, obj);
-	if (!closest.closest_obj.color)
-		return (0);
-	p = scene.o + scene.d * closest.c_t;
-	n = v_normal(p, closest);
-	color[0] = parse_color(0, closest.closest_obj.color,
-		ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
-			light, obj, scene.n_o, scene.n_l));
-	if (scene.deep <= 0 || closest.closest_obj.reflection <= 0)
-		return (color[0]);
-	r = reflect_ray(n, -scene.d);
-	color[1] = raytrace((t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-			scene.deep - 1, 0.001, MAX_SIZE, scene.n_o, scene.n_l}, obj, light);
-	color[0] = parse_color(0, color[0], 1 - closest.closest_obj.reflection) +
-			parse_color(0, color[1], closest.closest_obj.reflection);
-	return (color[0]);
+	while (scene.deep >= 0)
+	{
+		closest = intersections(scene, obj);
+		if (!closest.closest_obj.color)
+			return (0);
+		p = scene.o + scene.d * closest.c_t;
+		n = v_normal(p, closest);
+		color[scene.deep].color = parse_color(0, closest.closest_obj.color,
+			ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
+				light, obj, scene.n_o, scene.n_l));
+		color[scene.deep].reflection = closest.closest_obj.reflection;
+		if (scene.deep > 0 && closest.closest_obj.reflection > 0)
+		{
+			r = reflect_ray(n, -scene.d);
+			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
+				scene.deep - 1, 0.001, MAX_SIZE, scene.n_o, scene.n_l};
+		}
+		else
+			break;
+	}
+	color[deep].color = !deep ? color[deep].color : refl_color(color, deep);
+	return (color[deep].color);
 }
 
 __kernel
