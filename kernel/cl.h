@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   cl.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 16:21:19 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/03 01:04:33 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CL_H
 # define CL_H
 
-# define DEEP 1
+# define PI 3.14159265358979323846
+# define DEEP 0
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
@@ -113,14 +114,14 @@ float3					ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
 float					ft_p_d(float3 l, float3 n, float3 v, int s, float intens);
 float3					canvastoviewport(float3 point, t_scene scene);
 void					draw_scene(__global int *buff, t_s scene, __constant t_o *obj, __constant t_l *light);
-float3					q_equation(float k[3]);
+float2					q_equation(float k[3]);
 /*
 ** ray_obj
 */
-float3					raysphere(float3 o, float3 d, t_obj obj);
+float2					raysphere(float3 o, float3 d, t_obj obj);
 float					intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t);
-float3					raycylinder(float3 o, float3 d, t_obj obj);
-float3					raycone(float3 o, float3 d, t_obj obj);
-float3					rayplane(float3 o, float3 d, t_obj obj);
+float2					raycylinder(float3 o, float3 d, t_obj obj);
+float2					raycone(float3 o, float3 d, t_obj obj);
+float2					rayplane(float3 o, float3 d, t_obj obj);
 
 #endif

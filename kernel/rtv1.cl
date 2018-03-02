@@ -13,6 +13,56 @@
 #include "cl.h"
 /*
 **
+***********************************COLOR****************************************
+**
+*/
+static int	parse_color(int c1, int c2, float t)
+{
+	int dr;
+	int dg;
+	int db;
+
+	dr = (1 - t) * (float)(c1 / 0x10000 % 256) +
+		t * (float)(c2 / 0x10000 % 256);
+	dg = (1 - t) * (float)(c1 / 0x100 % 256) + t * (float)(c2 / 0x100 % 256);
+	db = (1 - t) * (float)(c1 % 256) + t * (float)(c2 % 256);
+	return (dr * 0x10000 + dg * 0x100 + db);
+}
+
+static int	refl_color(t_color *color, int deep)
+{
+	int	i;
+
+	i = 0;
+	while(i < deep)
+	{
+		color[i + 1].color = parse_color(0, color[i + 1].color, 1 - color[i + 1].reflection) +
+			parse_color(0, color[i].color, color[i + 1].reflection);
+		i++;
+	}
+	return (color[i].color);
+}
+
+static int	average_color(int *color, int smooth)
+{
+	int	i;
+	int d[3] = {0, 0, 0};
+
+	i = 0;
+	while( i < smooth * smooth)
+	{
+		d[0] += (float)(color[i] / 0x10000 % 256);
+		d[1] += (float)(color[i] / 0x100 % 256);
+		d[2] += (float)(color[i] % 256);
+		i++;
+	}
+	d[0] /= smooth * smooth;
+	d[1] /= smooth * smooth;
+	d[2] /= smooth * smooth;
+	return (d[0] * 0x10000 + d[1] * 0x100 + d[2]);
+}
+/*
+**
 ***********************************CONVERT**************************************
 **
 */
@@ -61,26 +111,19 @@ static	t_scene	convert_scene(t_s s)
 ***********************************UTILITY**************************************
 **
 */
-static float3	reflect_ray(float3 n, float3 l)
-{
-	float3	r;
-	r = 2.0f * n * dot(n, l) - l; 
-	return (r);
-}
-
 static float3	cam_rot(float3 rot, float3 coord)
 {
 	float3	angle;
 	float3	p[3];
 	float	func[6];
 
-	angle.x = M_PI * rot.x / 180;
+	angle.x = PI * rot.x / 180.0f;
 	func[0] = cos(angle.x);
 	func[1] = sin(angle.x);
-	angle.y = M_PI * rot.y / 180;
+	angle.y = PI * rot.y / 180.0f;
 	func[2] = cos(angle.y);
 	func[3] = sin(angle.y);
-	angle.z = M_PI * rot.z / 180;
+	angle.z = PI * rot.z / 180.0f;
 	func[4] = cos(angle.z);
 	func[5] = sin(angle.z);
 
@@ -98,73 +141,18 @@ static float3	cam_rot(float3 rot, float3 coord)
 	return (p[2]);
 }
 
-static int	parse_color(int c1, int c2, float t)
+float2	q_equation(float k[3])
 {
-	int dr;
-	int dg;
-	int db;
-
-	dr = (1 - t) * (float)(c1 / 0x10000 % 256) +
-		t * (float)(c2 / 0x10000 % 256);
-	dg = (1 - t) * (float)(c1 / 0x100 % 256) + t * (float)(c2 / 0x100 % 256);
-	db = (1 - t) * (float)(c1 % 256) + t * (float)(c2 % 256);
-	return (dr * 0x10000 + dg * 0x100 + db);
-}
-
-static int	refl_color(t_color *color, int deep)
-{
-	int	i;
-
-	i = 0;
-	while(i < deep)
-	{
-		color[i + 1].color = parse_color(0, color[i + 1].color, 1 - color[i + 1].reflection) +
-			parse_color(0, color[i].color, color[i + 1].reflection);
-		i++;
-	}
-	return (color[i].color);
-}
-
-static int	average_color(int *color, int smooth)
-{
-	int	i;
-	int d[3] = {0, 0, 0};
-
-	i = 0;
-	while( i < smooth * smooth)
-	{
-		d[0] += (float)(color[i] / 0x10000 % 256);
-		d[1] += (float)(color[i] / 0x100 % 256);
-		d[2] += (float)(color[i] % 256);
-		i++;
-	}
-	d[0] /= smooth * smooth;
-	d[1] /= smooth * smooth;
-	d[2] /= smooth * smooth;
-	return (d[0] * 0x10000 + d[1] * 0x100 + d[2]);
-}
-
-float3	q_equation(float k[3])
-{
-	float3	t;
+	float2	t;
 	float	disc;
 
 	disc = k[1] * k[1] - 4.0f * k[0] * k[2];
 	if (disc < 0)
-		return ((float3){INFINITY, INFINITY, 0});
+		return ((float2){INFINITY, INFINITY});
 	t.x = (-k[1] + sqrt(disc)) / (2.0f * k[0]);
 	t.y = (-k[1] - sqrt(disc)) / (2.0f * k[0]);
 	return (t);
 }
-
-float3	canvastoviewport(float3 point, t_scene scene)
-{
-	float3	tmp;
-	tmp = (float3){point.x * scene.viewport.x / scene.canvas.x,
-		point.y * scene.viewport.y / scene.canvas.y, 100};
-	return (tmp);
-}
-
 float3	v_normal(float3 p, t_closest closest)
 {
 	float3		proj;
@@ -192,10 +180,10 @@ float3	v_normal(float3 p, t_closest closest)
 ***********************************RAY_OBJ**************************************
 **
 */
-float3	raysphere(float3 o, float3 d, t_obj obj)
+float2	raysphere(float3 o, float3 d, t_obj obj)
 {
 	float3	oc;
-	float3	t;
+	float2	t;
 	float	k[3];
 
 	oc = o - obj.c;
@@ -224,11 +212,11 @@ float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
 	return (INFINITY);
 }
 
-float3	raycylinder(float3 o, float3 d, t_obj obj)
+float2	raycylinder(float3 o, float3 d, t_obj obj)
 {
 	float3	p;
 	float3	v;
-	float3	t;
+	float2	t;
 	float3	a[2];
 	float	k[3];
 
@@ -245,20 +233,19 @@ float3	raycylinder(float3 o, float3 d, t_obj obj)
 	return (t);
 }
 
-float3	raycone(float3 o, float3 d, t_obj obj)
+float2	raycone(float3 o, float3 d, t_obj obj)
 {
 	float3	p;
 	float3	v;
-	float3	t;
+	float2	t;
 	float3	a[2];
 	float	angle;
 	float	k[3];
 
-	angle = M_PI * obj.radius / 180;
+	angle = PI * obj.radius / 180;
 	v = (obj.d - obj.c) / length(obj.d - obj.c);
 	p = o - obj.d;
-	a[0] = v * dot(d, v);
-	a[0] = d - a[0];
+	a[0] = d - v * dot(d, v);
 	k[0] = cos(angle) * cos(angle) * dot(a[0], a[0]);
 	k[0] -= sin(angle) * sin(angle) * dot(d, v) * dot(d, v);
 	a[1] = p - v * dot(p, v);
@@ -272,10 +259,10 @@ float3	raycone(float3 o, float3 d, t_obj obj)
 	return (t);
 }
 
-float3	rayplane(float3 o, float3 d, t_obj obj)
+float2	rayplane(float3 o, float3 d, t_obj obj)
 {
 	float3	oc;
-	float3	t;
+	float2	t;
 	float	k[2];
 
 	oc = o - obj.c;
@@ -287,7 +274,7 @@ float3	rayplane(float3 o, float3 d, t_obj obj)
 		t.y = INFINITY;
 		return (t);		
 	}
-	return ((float3){INFINITY, INFINITY, 0});
+	return ((float2){INFINITY, INFINITY});
 }
 /*
 **
@@ -303,12 +290,12 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 
 	i = 0.0f;
 	nl = dot(n, l);
-	nl > 0 ? i += intens * nl / (length(n) * length(l)) : 0;
+	nl > 0.0f ? i += intens * nl / (length(n) * length(l)) : 0;
 	if (s >= 0)
 	{
-		r = reflect_ray(n, l);
+		r = 2.0f * n * dot(n, l) - l;
 		rv = dot(r, v);
-		rv > 0 ? i += intens * pow(rv / (length(r) * length(v)), s) : 0;
+		rv > 0.0f ? i += intens * pow(rv / (length(r) * length(v)), s) : 0;
 	}
 	return (i);
 }
@@ -330,7 +317,7 @@ float3	ft_light_p_d(float3 p, t_light light, t_obj *obj, int n_o, int n_l)
 		max = INFINITY;
 	}
 	closest = intersections((t_scene){p, l, (float3){0,0,0}, (float3){0,0,0},
-		(float3){0,0,0}, 0.001, max, n_o, n_l}, obj);
+		(float3){0,0,0}, 0.001f, max, n_o, n_l}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){INFINITY, INFINITY, 0});
 	return (l);
@@ -355,7 +342,7 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 				i += ft_p_d(l, pnv[1], pnv[2], s, light[a].intensity);
 		}
 	}
-	i > 1 ? i = 1 : 0;
+	i > 1.0f ? i = 1.0f : 0;
 	return (i);
 }
 /*
@@ -366,7 +353,7 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 t_closest	intersections(t_scene scene, t_obj *obj)
 {
 	t_closest	closest;
-	float3		t;
+	float2		t;
 	int			i;
 
 	closest.closest_obj.color = 0;
@@ -418,9 +405,9 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 		color[deep].reflection = closest.closest_obj.reflection;
 		if (deep > 0 && closest.closest_obj.reflection > 0)
 		{
-			r = reflect_ray(n, -scene.d);
+			r = 2.0f * n * dot(n, -scene.d) - -scene.d;
 			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-				0.001, INFINITY, scene.n_o, scene.n_l};
+				0.001f, INFINITY, scene.n_o, scene.n_l};
 			deep--;
 		}
 		else
@@ -442,7 +429,7 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	int			smooth;
 	t_scene		scene;
 	t_light		light[10];
-	t_obj		obj[10];
+	t_obj		obj[20];
 
 	scene = convert_scene(s);
 	convert_obj(o, obj, scene.n_o);
@@ -456,8 +443,10 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 		col = -1;
 		while(++col < smooth)
 		{
-			scene.d = canvastoviewport((float3){x - scene.canvas.x / 2.0f + (row + 0.5f) / smooth,
-			scene.canvas.y / 2.0f - y + (col + 0.5f) / smooth, 0}, scene);
+			scene.d = (float3){(x - scene.canvas.x / 2.0f + (row + 0.5f) / smooth)
+				* scene.viewport.x / scene.canvas.x,
+			(scene.canvas.y / 2.0f - y + (col + 0.5f) / smooth)
+				* scene.viewport.y / scene.canvas.y, 100};
 			scene.d = cam_rot(scene.cam_rot, scene.d);
 			color[i++] = raytrace(scene, obj, light);
 		}
