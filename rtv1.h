@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 15:53:31 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/02 16:22:59 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 # include <stdio.h>
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
@@ -33,26 +33,6 @@
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
-# define MAX_SIZE 214748367
-# define HIGH	1000
-# define WIDTH	1000
-# define B_A	0
-# define B_W	13
-# define B_D	2
-# define B_S	1
-# define B_Q	12
-# define B_E	14
-# define B_PLUS	69
-# define B_MIN	78
-# define M_UP	5
-# define M_DOWN	4
-# define M_L	1
-# define M_R	2
-# define UP		126
-# define DOWN	125
-# define LEFT	123
-# define RIGHT	124
-# define ESC	53
 
 typedef	struct			s_host
 {

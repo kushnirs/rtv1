@@ -6,14 +6,13 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 14:36:11 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/02 16:21:19 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CL_H
 # define CL_H
 
-# define MAX_SIZE 214748360
 # define DEEP 1
 # define SPHERE 1
 # define CYLINDER 2

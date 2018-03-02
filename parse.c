@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 14:10:40 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/02 16:22:05 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ static void	parse_scene(char *line, t_scene *scene)
 		exit(ft_printf("missing parameter /0\n")) : 0;
 	scene->d = (t_point){0, 0, 0};
 	scene->t_min = 1;
-	scene->t_max = MAX_SIZE;
+	scene->t_max = INFINITY;
 	scene->viewport = (t_point){100, 100, 0};
 }
 

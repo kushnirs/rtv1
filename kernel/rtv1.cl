@@ -151,7 +151,7 @@ float3	q_equation(float k[3])
 
 	disc = k[1] * k[1] - 4.0f * k[0] * k[2];
 	if (disc < 0)
-		return ((float3){MAX_SIZE, MAX_SIZE, 0});
+		return ((float3){INFINITY, INFINITY, 0});
 	t.x = (-k[1] + sqrt(disc)) / (2.0f * k[0]);
 	t.y = (-k[1] - sqrt(disc)) / (2.0f * k[0]);
 	return (t);
@@ -213,7 +213,7 @@ float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
 	float k[2];
 
 	if (t < 0)
-		return (MAX_SIZE);
+		return (INFINITY);
 	p = d * t + o;
 	a = p - obj.c;
 	k[0] = dot(v, a);
@@ -221,7 +221,7 @@ float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
 	k[1] = dot(v, a);
 	if (k[0] > 0 && k[1] < 0 && t > 0)
 		return (t);
-	return (MAX_SIZE);
+	return (INFINITY);
 }
 
 float3	raycylinder(float3 o, float3 d, t_obj obj)
@@ -284,10 +284,10 @@ float3	rayplane(float3 o, float3 d, t_obj obj)
 	if (k[0])
 	{
 		t.x = -k[1] / k[0];
-		t.y = MAX_SIZE;
+		t.y = INFINITY;
 		return (t);		
 	}
-	return ((float3){MAX_SIZE, MAX_SIZE, 0});
+	return ((float3){INFINITY, INFINITY, 0});
 }
 /*
 **
@@ -327,12 +327,12 @@ float3	ft_light_p_d(float3 p, t_light light, t_obj *obj, int n_o, int n_l)
 	else
 	{
 		l = light.direction;
-		max = MAX_SIZE;
+		max = INFINITY;
 	}
 	closest = intersections((t_scene){p, l, (float3){0,0,0}, (float3){0,0,0},
 		(float3){0,0,0}, 0.001, max, n_o, n_l}, obj);
 	if (closest.closest_obj.color)
-		return ((float3){MAX_SIZE, MAX_SIZE, 0});
+		return ((float3){INFINITY, INFINITY, 0});
 	return (l);
 }
 
@@ -351,7 +351,7 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 		else
 		{
 			l = ft_light_p_d(pnv[0], light[a], obj, n_o, n_l);
-			if (l.x != MAX_SIZE && l.y != MAX_SIZE)
+			if (l.x != INFINITY && l.y != INFINITY)
 				i += ft_p_d(l, pnv[1], pnv[2], s, light[a].intensity);
 		}
 	}
@@ -420,7 +420,7 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 		{
 			r = reflect_ray(n, -scene.d);
 			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-				0.001, MAX_SIZE, scene.n_o, scene.n_l};
+				0.001, INFINITY, scene.n_o, scene.n_l};
 			deep--;
 		}
 		else
