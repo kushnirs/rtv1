@@ -301,7 +301,7 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 	float		i;
 	float3		r;
 
-	i = 0;
+	i = 0.0f;
 	nl = dot(n, l);
 	nl > 0 ? i += intens * nl / (length(n) * length(l)) : 0;
 	if (s >= 0)
@@ -313,7 +313,7 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 	return (i);
 }
 
-float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
+float3	ft_light_p_d(float3 p, t_light light, t_obj *obj, int n_o, int n_l)
 {
 	t_closest	closest;
 	float		max;
@@ -321,7 +321,7 @@ float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
 
 	if (light.type == POINT)
 	{
-		l = light.direction - pnv;
+		l = light.direction - p;
 		max = 1.0f;
 	}
 	else
@@ -329,7 +329,7 @@ float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
 		l = light.direction;
 		max = MAX_SIZE;
 	}
-	closest = intersections((t_scene){pnv, l, (float3){0,0,0}, (float3){0,0,0},
+	closest = intersections((t_scene){p, l, (float3){0,0,0}, (float3){0,0,0},
 		(float3){0,0,0}, 0.001, max, n_o, n_l}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
@@ -419,8 +419,8 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 		if (deep > 0 && closest.closest_obj.reflection > 0)
 		{
 			r = reflect_ray(n, -scene.d);
-			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport
-				, 0.001, MAX_SIZE, scene.n_o, scene.n_l};
+			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
+				0.001, MAX_SIZE, scene.n_o, scene.n_l};
 			deep--;
 		}
 		else

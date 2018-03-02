@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 14:08:47 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/02 15:53:31 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 # include <stdio.h>
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
