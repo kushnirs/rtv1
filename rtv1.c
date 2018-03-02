@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/03/02 00:16:14 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 13:30:25 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ static int	help(void)
 	return (-1);
 }
 
-int		main(int ac, char **av)
+int			main(int ac, char **av)
 {
 	t_sdl	data;
 
@@ -41,20 +41,41 @@ int		main(int ac, char **av)
 	data.surface = SDL_GetWindowSurface(data.win);
 	!data.surface ? exit(ft_printf("Surface error: %s\n", SDL_GetError())) : 0;
 	data.pixel = (int*)data.surface->pixels;
+	host_fract("./kernel/rtv1.cl", "draw_scene", &data);
 	while (1)
 	{
-		host_fract("./kernel/rtv1.cl", "draw_scene", &data);
+		ft_bzero(data.surface->pixels, data.surface->w * data.surface->h * 4);
+		kernel_param(&data);
 		fps(&data);
-		SDL_UpdateWindowSurface(data.win);
 		while (SDL_PollEvent(&data.event))
 		{
-			if (data.event.key.keysym.sym == SDLK_ESCAPE)
+			if (data.event.type == SDL_KEYDOWN)
 			{
-				SDL_DestroyWindow(data.win);
-				SDL_Quit();
-				return (0);
+				if (data.event.key.keysym.sym == SDLK_UP)
+					data.scene.cam_rot.x += 5;
+				else if (data.event.key.keysym.sym == SDLK_DOWN)
+					data.scene.cam_rot.x -= 5;
+				else if (data.event.key.keysym.sym == SDLK_LEFT)
+					data.scene.cam_rot.y -= 5;
+				else if (data.event.key.keysym.sym == SDLK_RIGHT)
+					data.scene.cam_rot.y += 5;
+				else if (data.event.key.keysym.sym == SDLK_a)
+					data.scene.o.x -= 10;
+				else if (data.event.key.keysym.sym == SDLK_d)
+					data.scene.o.x += 10;
+				else if (data.event.key.keysym.sym == SDLK_w)
+					data.scene.o.z += 10;
+				else if (data.event.key.keysym.sym == SDLK_s)
+					data.scene.o.z -= 10;
+				else if (data.event.key.keysym.sym == SDLK_ESCAPE)
+				{
+					SDL_DestroyWindow(data.win);
+					SDL_Quit();
+					return (0);
+				}				
 			}
 		}
+		SDL_UpdateWindowSurface(data.win);
 	}
 	return (0);
 }

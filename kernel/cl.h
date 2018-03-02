@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   my_cl.h                                            :+:      :+:    :+:   */
+/*   cl.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/02/28 22:57:22 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 14:36:11 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define CL_H
 
 # define MAX_SIZE 214748360
+# define DEEP 1
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
@@ -59,7 +60,6 @@ typedef struct			s_scene
 	float3				cam_rot;
 	float3				canvas;
 	float3				viewport;
-	int					deep;
 	float				t_min;
 	float				t_max;
 	int					n_o;
@@ -100,7 +100,6 @@ typedef struct			s_s
 	t_point				cam_rot;
 	t_point				canvas;
 	t_point				viewport;
-	int					deep;
 	float				t_min;
 	float				t_max;
 	int					n_o;
@@ -120,7 +119,7 @@ float3					q_equation(float k[3]);
 ** ray_obj
 */
 float3					raysphere(float3 o, float3 d, t_obj obj);
-float					intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float3 p2, float t);
+float					intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t);
 float3					raycylinder(float3 o, float3 d, t_obj obj);
 float3					raycone(float3 o, float3 d, t_obj obj);
 float3					rayplane(float3 o, float3 d, t_obj obj);

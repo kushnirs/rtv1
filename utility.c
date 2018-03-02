@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utility.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/01 23:49:44 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 12:26:29 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,8 @@ void	fps(t_sdl *data)
 {
 	static t_ui	prev;
 	static t_ui	fps;
-	char	*fps_str;
+	char		*fps_str;
 	SDL_Surface	*message;
-	const int	delay = 1000 / 50;
 
 	fps = 1000 / (SDL_GetTicks() - prev);
 	prev = SDL_GetTicks();
@@ -27,6 +26,4 @@ void	fps(t_sdl *data)
 		fps_str, (SDL_Color){255, 255, 255, 255});
 	SDL_BlitSurface(message, NULL, data->surface, NULL);
 	ft_memdel((void**)&fps_str);
-	// if (delay > fps)
-	// 	SDL_Delay(delay - fps);
 }

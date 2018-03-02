@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/30 13:07:28 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/28 02:41:09 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 10:15:21 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,8 @@ int				get_next_line(const int fd, char **line)
 	if (!(*line = ft_strsub(tmp->content, 0, i)))
 		return (-1);
 	tm_ = tmp->content;
-	tmp->content = ft_strchr(tm_ + i, '\n')  ? ft_strdup(tm_ + i + 1) : ft_strdup(tm_ + i);
+	tmp->content = ft_strchr(tm_ + i, '\n') ?
+		ft_strdup(tm_ + i + 1) : ft_strdup(tm_ + i);
 	ft_memdel((void **)&tm_);
 	return (tmp->content ? 1 : -1);
 }

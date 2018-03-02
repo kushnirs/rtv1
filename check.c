@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/28 21:02:22 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/01 11:12:34 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 12:14:38 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int	check_float(char *str, float *res)
 	num = 0;
 	*res = (float)ft_atoi(str);
 	len = ft_nbrlen((int)*res);
-	str[len] == '.' ?  num = (float)ft_atoi(&str[len + 1]) : 0;
+	str[len] == '.' ? num = (float)ft_atoi(&str[len + 1]) : 0;
 	len = ft_nbrlen((int)num);
 	*res += num / pow(10, len);
 	return (i + 1);
@@ -38,7 +38,6 @@ int	check_float(char *str, float *res)
 int	check_coord(char *str, t_point *res)
 {
 	int		i;
-	float	num;
 
 	str[0] != '{' ? exit(ft_printf("Wrong coord\n")) : 0;
 	i = 0;
@@ -46,15 +45,13 @@ int	check_coord(char *str, t_point *res)
 	i += check_float(&str[1 + i], &res->y);
 	i += check_float(&str[1 + i], &res->z);
 	str[i] != '}' ? exit(ft_printf("missing parameter }\n")) : 0;
-	i += str[i + 1] == ',' ? 2 : 1; 
+	i += str[i + 1] == ',' ? 2 : 1;
 	return (i);
 }
 
 int	check_int(char *str, int *res)
 {
 	int		i;
-	int		len;
-	float	num;
 
 	i = -1;
 	while (str[++i] != ',' && str[i] != '}' && str[i])

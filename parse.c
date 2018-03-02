@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/01 23:52:55 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 14:10:40 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ static void	parse_light(char *line, t_light *light)
 
 	line[6] != '{' ? exit(ft_printf("Wrong light parameter\n")) : 0;
 	i = 7;
-	i +=  check_int(&line[i], &light->type);
+	i += check_int(&line[i], &light->type);
 	i += check_float(&line[i], &light->intensity);
 	i += check_coord(&line[i], &light->direction);
 	line[i] != '}' || line[i + 1] != 0 ?
@@ -39,7 +39,6 @@ static void	parse_object(char *line, t_obj *obj)
 	i += check_float(&line[i], &obj->specular);
 	i += check_float(&line[i], &obj->reflection);
 	line[i] ? exit(ft_printf("missing parameter /0\n")) : 0;
-
 }
 
 static void	parse_scene(char *line, t_scene *scene)
@@ -51,8 +50,8 @@ static void	parse_scene(char *line, t_scene *scene)
 	i += check_coord(&line[i], &scene->o);
 	i += check_coord(&line[i], &scene->cam_rot);
 	i += check_coord(&line[i], &scene->canvas);
-	i += check_int(&line[i], &scene->deep);
-	line[i] ? exit(ft_printf("missing parameter /0\n")) : 0;
+	line[i] != '}' || line[i + 1] != 0 ?
+		exit(ft_printf("missing parameter /0\n")) : 0;
 	scene->d = (t_point){0, 0, 0};
 	scene->t_min = 1;
 	scene->t_max = MAX_SIZE;
@@ -61,14 +60,14 @@ static void	parse_scene(char *line, t_scene *scene)
 
 static void	read_param(char *filename, t_sdl *data, int *num, int fd)
 {
-	int		i;
 	int		gnl;
 	char	*line;
 
 	data->scene.n_o = num[O];
-	data->scene.n_l = num[L];	
+	data->scene.n_l = num[L];
 	num[O] ? data->obj = (t_obj*)malloc(sizeof(t_obj) * (num[O])) : 0;
 	num[L] ? data->light = (t_light*)malloc(sizeof(t_light) * (num[L])) : 0;
+	!data->obj || !data->light ? exit(ft_printf("malloc error\n")) : 0;
 	if ((fd = open(filename, O_RDONLY)) == -1)
 		exit(ft_printf("No file %s\n", filename));
 	while ((gnl = get_next_line(fd, &line)) > 0)
@@ -85,13 +84,17 @@ static void	read_param(char *filename, t_sdl *data, int *num, int fd)
 	close(fd);
 }
 
-void	parse_param(char *filename, t_sdl *data)
+void		parse_param(char *filename, t_sdl *data)
 {
 	int		fd;
 	int		gnl;
-	int		num[3] = {0, 0, 0};
+	int		num[3];
 	char	*line;
 
+	num[0] = 0;
+	num[1] = 0;
+	num[2] = 0;
+	line = NULL;
 	if ((fd = open(filename, O_RDONLY)) == -1)
 		exit(ft_printf("No file %s\n", filename));
 	while ((gnl = get_next_line(fd, &line)) > 0)

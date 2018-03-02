@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/26 17:42:31 by skushnir          #+#    #+#             */
-/*   Updated: 2018/02/27 12:25:43 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/02 10:14:30 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdlib.h>
-
-#include <stdio.h>
 
 # define BUFF_SIZE 32
 

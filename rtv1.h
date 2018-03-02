@@ -3,25 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/01 23:40:34 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 14:08:47 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RTV1_CL_H
-# define RTV1_CL_H
+#ifndef RTV1_H
+# define RTV1_H
 
 # include <math.h>
-# include "framework/SDL2_ttf.framework/Headers/SDL_ttf.h"
-# include "framework/SDL2.framework/Headers/SDL.h"
-# include "OpenCL/opencl.h"
-# include "libft/printf/ft_printf.h"
+# include <OpenCL/opencl.h>
+# include "SDL.h"
+# include "SDL_ttf.h"
+# include "ft_printf.h"
 
-#include <stdio.h>
+# include <stdio.h>
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
@@ -108,7 +108,6 @@ typedef struct			s_scene
 	t_point				cam_rot;
 	t_point				canvas;
 	t_point				viewport;
-	int					deep;
 	float				t_min;
 	float				t_max;
 	int					n_o;
@@ -126,7 +125,6 @@ typedef struct			s_sdl
 	t_obj				*obj;
 	t_light				*light;
 }						t_sdl;
-
 
 /*
 **	main func

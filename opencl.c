@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   opencl.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 00:15:04 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/02 13:18:53 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,33 +48,32 @@ static void	host_program(char *funcname, char *str, int size, t_sdl *data)
 		data->scene.canvas.x * data->scene.canvas.y * sizeof(int), NULL, &ret);
 	ret ? exit(ft_printf("clCreateBuffer Failed\n")) : 0;
 	data->host.obj = clCreateBuffer(data->host.context, CL_MEM_USE_HOST_PTR,
-		sizeof(data->obj), data->obj, &ret);
+		sizeof(t_obj) * data->scene.n_o, data->obj, &ret);
 	ret ? exit(ft_printf("clCreateObj Failed\n")) : 0;
 	data->host.light = clCreateBuffer(data->host.context, CL_MEM_USE_HOST_PTR,
-		sizeof(data->light), data->light, &ret);
+		sizeof(t_light) * data->scene.n_l, data->light, &ret);
 	ret ? exit(ft_printf("clCreateLight Failed\n")) : 0;
 	data->host.program = clCreateProgramWithSource(data->host.context, 1,
 		(const char **)&str, (const size_t *)&size, &ret);
 	ret ? exit(ft_printf("clCreateProgramWithSource Failed\n")) : 0;
 	(ret = clBuildProgram(data->host.program, 1, &data->host.dev_id,
 	"-I ./kernel", NULL, NULL)) ? ft_printf("%dBuildProgram Failed\n", ret) : 0;
-	// if (ret == CL_BUILD_PROGRAM_FAILURE)
-	//  {
-	//     	// ** Determine the size of the log
-	//     	size_t log_size;
-	//     	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
-	// 		CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-	//     	// ** Allocate memory for the log
-	//     	char *log = (char *) malloc(log_size);
-	//     	// ** Get the log
-	//     	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
-	// 		CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
-	//     	// ** Print the log
-	//     	printf("%s\n", log);
-	//  }
+	if (ret == CL_BUILD_PROGRAM_FAILURE)
+	 {
+	    	// ** Determine the size of the log
+	    	size_t log_size;
+	    	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
+			CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+	    	// ** Allocate memory for the log
+	    	char *log = (char *) malloc(log_size);
+	    	// ** Get the log
+	    	clGetProgramBuildInfo(data->host.program, data->host.dev_id,
+			CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+	    	// ** Print the log
+	    	printf("%s\n", log);
+	 }
 	data->host.kernel = clCreateKernel(data->host.program, funcname, &ret);
 	ret ? exit(ft_printf("clCreateKernel Failed\n")) : 0;
-	kernel_param(data);
 }
 
 int			host_fract(char *filename, char *funcname, t_sdl *data)

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "my_cl.h"
+#include "cl.h"
 /*
 **
 ***********************************CONVERT**************************************
@@ -50,7 +50,6 @@ static	t_scene	convert_scene(t_s s)
 	scene.cam_rot = (float3){s.cam_rot.x, s.cam_rot.y, s.cam_rot.z};
 	scene.canvas = (float3){s.canvas.x, s.canvas.y, s.canvas.z};
 	scene.viewport = (float3){s.viewport.x, s.viewport.y, s.viewport.z};
-	scene.deep = s.deep;
 	scene.t_min = s.t_min;
 	scene.t_max = s.t_max;
 	scene.n_o = s.n_o;
@@ -116,7 +115,6 @@ static int	refl_color(t_color *color, int deep)
 {
 	int	i;
 
-	// printf("%f ", color[0].reflection);
 	i = 0;
 	while(i < deep)
 	{
@@ -170,11 +168,13 @@ float3	canvastoviewport(float3 point, t_scene scene)
 float3	v_normal(float3 p, t_closest closest)
 {
 	float3		proj;
-	float3		t = {0.0f, 1.0f, 0.0f};
+	float3		t;
 	float3		n;
 	
 	if (closest.closest_obj.name == CYLINDER || closest.closest_obj.name == CONE)
 	{
+		t = (closest.closest_obj.d - closest.closest_obj.c) /
+			length(closest.closest_obj.d - closest.closest_obj.c);
 		n = p - closest.closest_obj.c;
 		proj = t * dot(n, t);
 		n = n - proj;
@@ -206,7 +206,7 @@ float3	raysphere(float3 o, float3 d, t_obj obj)
 	return (t);
 }
 
-float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float3 p2, float t)
+float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
 {
 	float3	p;
 	float3	a;
@@ -217,7 +217,7 @@ float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float3 p2, floa
 	p = d * t + o;
 	a = p - obj.c;
 	k[0] = dot(v, a);
-	a = p - p2;
+	a = p - obj.d;
 	k[1] = dot(v, a);
 	if (k[0] > 0 && k[1] < 0 && t > 0)
 		return (t);
@@ -240,8 +240,8 @@ float3	raycylinder(float3 o, float3 d, t_obj obj)
 	k[1] = 2.0f * dot(a[0], a[1]);
 	k[2] = dot(a[1], a[1]) - obj.radius * obj.radius;
 	t = q_equation(k);
-	t.x = intersect_cyl_con(d, o, v, obj, obj.d, t.x);
-	t.y = intersect_cyl_con(d, o, v, obj, obj.d, t.y);
+	t.x = intersect_cyl_con(d, o, v, obj, t.x);
+	t.y = intersect_cyl_con(d, o, v, obj, t.y);
 	return (t);
 }
 
@@ -267,8 +267,8 @@ float3	raycone(float3 o, float3 d, t_obj obj)
 	k[2] = cos(angle) * cos(angle) * dot(a[1], a[1]);
 	k[2] -= sin(angle) * sin(angle) * dot(p, v) * dot(p, v);
 	t = q_equation(k);
-	t.x = intersect_cyl_con(d, o, v, obj, obj.d, t.x);
-	t.y = intersect_cyl_con(d, o, v, obj, obj.d, t.y);
+	t.x = intersect_cyl_con(d, o, v, obj, t.x);
+	t.y = intersect_cyl_con(d, o, v, obj, t.y);
 	return (t);
 }
 
@@ -330,7 +330,7 @@ float3	ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l)
 		max = MAX_SIZE;
 	}
 	closest = intersections((t_scene){pnv, l, (float3){0,0,0}, (float3){0,0,0},
-		(float3){0,0,0}, 0, 0.001, max, n_o, n_l}, obj);
+		(float3){0,0,0}, 0.001, max, n_o, n_l}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){MAX_SIZE, MAX_SIZE, 0});
 	return (l);
@@ -398,35 +398,36 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 
 int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 {
-	t_color		color[scene.deep + 1];
+	t_color		color[DEEP + 1];
 	t_closest	closest;
 	float3		p;
 	float3		n;
 	float3		r;
-	int			deep = scene.deep;
+	int			deep = DEEP;
 
-	while (scene.deep >= 0)
+	while (deep >= 0)
 	{
 		closest = intersections(scene, obj);
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;
 		n = v_normal(p, closest);
-		color[scene.deep].color = parse_color(0, closest.closest_obj.color,
+		color[deep].color = parse_color(0, closest.closest_obj.color,
 			ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
 				light, obj, scene.n_o, scene.n_l));
-		color[scene.deep].reflection = closest.closest_obj.reflection;
-		if (scene.deep > 0 && closest.closest_obj.reflection > 0)
+		color[deep].reflection = closest.closest_obj.reflection;
+		if (deep > 0 && closest.closest_obj.reflection > 0)
 		{
 			r = reflect_ray(n, -scene.d);
-			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-				scene.deep - 1, 0.001, MAX_SIZE, scene.n_o, scene.n_l};
+			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport
+				, 0.001, MAX_SIZE, scene.n_o, scene.n_l};
+			deep--;
 		}
 		else
 			break;
 	}
-	color[deep].color = !deep ? color[deep].color : refl_color(color, deep);
-	return (color[deep].color);
+	DEEP ? color[DEEP].color = refl_color(color, DEEP) : 0;
+	return (color[DEEP].color);
 }
 
 __kernel

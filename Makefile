@@ -3,31 +3,42 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sergee <sergee@student.42.fr>              +#+  +:+       +#+         #
+#    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/03/01 20:04:28 by sergee           ###   ########.fr        #
+#    Updated: 2018/03/02 12:23:34 by skushnir         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = RTv1
+NAME		= RTv1
 
-SRC = rtv1.c handlers.c opencl.c parse.c check.c utility.c
+CC			= gcc
 
-HDR = rtv1.h
+CFLAGS		= -Wall -Wextra -Werror -O3
 
-LIB = libft/libft.a
+SRC			= rtv1.c handlers.c opencl.c parse.c check.c utility.c
 
-OBJ = $(SRC:.c=.o)
+HDR			= rtv1.h
 
-all:lib $(NAME)
+LIB			= libft/libft.a
+
+OBJ			= $(SRC:.c=.o)
+
+INCLUDES	= -F./framework
+INCLUDES	+= $(addprefix -I, ./libft/printf ./framework/SDL2.framework/Headers	\
+							./framework/SDL2_ttf.framework/Headers)
+
+FRAMEWORKS	=	-rpath ./framework -framework OpenGl -framework AppKit -framework opencl	\
+				-framework SDL2 -framework SDL2_ttf
+
+
+all: lib $(NAME)
 
 $(NAME): $(OBJ) $(HDR) $(LIB)
-	gcc  -O3 -o $(NAME) $(OBJ) $(LIB) -F. -rpath . -framework OpenGl	\
-	-framework AppKit -framework opencl -framework SDL2 -framework SDL2_ttf
+	$(CC)  $(CFLAGS) -o $(NAME) $(OBJ) $(LIB) $(INCLUDES) $(FRAMEWORKS)
 
-.c.o:
-	gcc  -O3 -c $< -F.
+$(OBJ): %.o : %.c $(HDR)
+	$(CC) $(CFLAGS) -c $< $(INCLUDES)
 
 lib: 
 	make -C libft;
@@ -42,4 +53,3 @@ fclean: clean
 re: fclean all
 
 .NOTPARALLEL: all $(NAME) re
-# -Wall -Wextra -Werror
