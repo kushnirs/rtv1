@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 15:46:37 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 15:51:07 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ void		fps(t_sdl *data)
 	fps_str = ft_itoa(fps);
 	data->fps = NULL;
 	ttf = TTF_OpenFont("ARIAL.TTF", 22);
-	data->fps = TTF_RenderText_Solid(ttf,
-		fps_str, (SDL_Color){255, 255, 255, 255});
+	data->fps = TTF_RenderText_Solid(ttf, fps_str,
+		(SDL_Color){255, 255, 255, 255});
 	SDL_BlitSurface(data->fps, NULL, data->surface, NULL);
 	TTF_CloseFont(ttf);
 	SDL_FreeSurface(data->fps);
