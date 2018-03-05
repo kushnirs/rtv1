@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 13:42:13 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 15:20:29 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,12 @@ void		kernel_param(t_sdl *data)
 	(ret = clSetKernelArg(data->host.kernel, 3, sizeof(cl_mem),
 	(void *)&data->host.light)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	ret = clEnqueueNDRangeKernel(data->host.com_queue, data->host.kernel,
-		2, NULL, (size_t[3]){data->scene.canvas.x, data->scene.canvas.y, 0},
+		2, NULL, (size_t[3]){data->surface->w, data->surface->h, 0},
 		NULL, 0, NULL, NULL);
 	ret ? exit(ft_printf("clEnqueueNDRangeKernel Failed\n")) : 0;
 	ret = clEnqueueReadBuffer(data->host.com_queue, data->host.memobj, CL_TRUE,
-		0, data->scene.canvas.x * data->scene.canvas.y * sizeof(int),
-		data->pixel, 0, NULL, NULL);
+		0, data->surface->w * data->surface->h * sizeof(int),
+		(int*)data->surface->pixels, 0, NULL, NULL);
 	ret ? exit(ft_printf("clEnqueueReadBuffer Failed\n")) : 0;
 }
 
@@ -45,7 +45,7 @@ static void	host_program(char *funcname, char *str, int size, t_sdl *data)
 		data->host.dev_id, 0, &ret);
 	ret ? exit(ft_printf("clCreateCommandQueue Failed\n")) : 0;
 	data->host.memobj = clCreateBuffer(data->host.context, CL_MEM_READ_WRITE,
-		data->scene.canvas.x * data->scene.canvas.y * sizeof(int), NULL, &ret);
+		data->surface->w * data->surface->h * sizeof(int), NULL, &ret);
 	ret ? exit(ft_printf("clCreateBuffer Failed\n")) : 0;
 	data->host.obj = clCreateBuffer(data->host.context, CL_MEM_USE_HOST_PTR,
 		sizeof(t_obj) * data->scene.n_o, data->obj, &ret);

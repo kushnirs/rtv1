@@ -437,7 +437,7 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	int			color[4];
 	int			smooth;
 	t_scene		scene;
-	t_light		light[10];
+	t_light		light[20];
 	t_obj		obj[20];
 
 	scene = convert_scene(s);

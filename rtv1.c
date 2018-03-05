@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/03/05 14:22:56 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 15:55:52 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ int			main(int ac, char **av)
 	!data.win ? exit(ft_printf("Window error: %s\n", SDL_GetError())) : 0;
 	data.surface = SDL_GetWindowSurface(data.win);
 	!data.surface ? exit(ft_printf("Surface error: %s\n", SDL_GetError())) : 0;
-	data.pixel = (int*)data.surface->pixels;
 	host_fract("./kernel/rtv1.cl", "draw_scene", &data);
 	while (1)
 	{
