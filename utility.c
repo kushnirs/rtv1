@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/05 21:58:17 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 13:21:57 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 14:13:08 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,30 @@ void		fps(t_sdl *data)
 	ft_memdel((void**)&fps_str);
 }
 
+static void	event_move(t_sdl *data)
+{
+	if (data->event.key.keysym.sym == SDLK_a)
+	{
+		data->scene.o.z += 5 * sin(data->scene.cam_rot.y * M_PI / 180);
+		data->scene.o.x -= 5 * cos(data->scene.cam_rot.y * M_PI / 180);
+	}
+	else if (data->event.key.keysym.sym == SDLK_d)
+	{
+		data->scene.o.z -= 5 * sin(data->scene.cam_rot.y * M_PI / 180);
+		data->scene.o.x += 5 * cos(data->scene.cam_rot.y * M_PI / 180);
+	}
+	else if (data->event.key.keysym.sym == SDLK_w)
+	{
+		data->scene.o.z += 5 * cos(data->scene.cam_rot.y * M_PI / 180);
+		data->scene.o.x += 5 * sin(data->scene.cam_rot.y * M_PI / 180);
+	}
+	else if (data->event.key.keysym.sym == SDLK_s)
+	{
+		data->scene.o.z -= 5 * cos(data->scene.cam_rot.y * M_PI / 180);
+		data->scene.o.x -= 5 * sin(data->scene.cam_rot.y * M_PI / 180);
+	}
+}
+
 int			event(t_sdl *data)
 {
 	if (data->event.type == SDL_KEYDOWN)
@@ -47,16 +71,10 @@ int			event(t_sdl *data)
 			data->scene.cam_rot.y -= 5;
 		else if (data->event.key.keysym.sym == SDLK_RIGHT)
 			data->scene.cam_rot.y += 5;
-		else if (data->event.key.keysym.sym == SDLK_a)
-			data->scene.o.x -= 5 * sin(data->scene.cam_rot.y * M_PI / 180);
-		else if (data->event.key.keysym.sym == SDLK_d)
-			data->scene.o.x += 5 * sin(data->scene.cam_rot.y * M_PI / 180);
-		else if (data->event.key.keysym.sym == SDLK_w)
-			data->scene.o.z += 5 * cos(data->scene.cam_rot.y * M_PI / 180);
-		else if (data->event.key.keysym.sym == SDLK_s)
-			data->scene.o.z -= 5 * cos(data->scene.cam_rot.y * M_PI / 180);
 		else if (data->event.key.keysym.sym == SDLK_ESCAPE)
 			return (close_sdl(data));
+		else
+			event_move(data);
 	}
 	else if (data->event.type == SDL_QUIT)
 		return (close_sdl(data));
