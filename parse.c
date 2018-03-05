@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 16:22:05 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 10:24:14 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,18 +86,16 @@ static void	read_param(char *filename, t_sdl *data, int *num, int fd)
 
 void		parse_param(char *filename, t_sdl *data)
 {
-	int		fd;
-	int		gnl;
-	int		num[3];
+	int		num[5];
 	char	*line;
 
 	num[0] = 0;
 	num[1] = 0;
 	num[2] = 0;
 	line = NULL;
-	if ((fd = open(filename, O_RDONLY)) == -1)
+	if ((num[3] = open(filename, O_RDONLY)) == -1)
 		exit(ft_printf("No file %s\n", filename));
-	while ((gnl = get_next_line(fd, &line)) > 0)
+	while ((num[4] = get_next_line(num[3], &line)) > 0)
 	{
 		if (!ft_strncmp(line, "scene\t", 6))
 			num[S]++;
@@ -109,8 +107,8 @@ void		parse_param(char *filename, t_sdl *data)
 			exit(ft_printf("Wrong parameter\n"));
 		ft_memdel((void **)&line);
 	}
-	gnl == -1 ? exit(ft_printf("GNL SHIT\n")) : 0;
+	num[4] == -1 ? exit(ft_printf("GNL SHIT\n")) : 0;
 	num[S] != 1 ? exit(ft_printf("Wrong quantity of scenes\n")) : 0;
-	close(fd);
-	read_param(filename, data, num, fd);
+	close(num[3]);
+	read_param(filename, data, num, num[3]);
 }

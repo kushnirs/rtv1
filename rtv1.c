@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 09:09:57 by skushnir          #+#    #+#             */
-/*   Updated: 2018/03/02 15:45:49 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 11:02:19 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,33 +48,7 @@ int			main(int ac, char **av)
 		kernel_param(&data);
 		fps(&data);
 		while (SDL_PollEvent(&data.event))
-		{
-			if (data.event.type == SDL_KEYDOWN)
-			{
-				if (data.event.key.keysym.sym == SDLK_UP)
-					data.scene.cam_rot.x += 5;
-				else if (data.event.key.keysym.sym == SDLK_DOWN)
-					data.scene.cam_rot.x -= 5;
-				else if (data.event.key.keysym.sym == SDLK_LEFT)
-					data.scene.cam_rot.y -= 5;
-				else if (data.event.key.keysym.sym == SDLK_RIGHT)
-					data.scene.cam_rot.y += 5;
-				else if (data.event.key.keysym.sym == SDLK_a)
-					data.scene.o.x -= 10;
-				else if (data.event.key.keysym.sym == SDLK_d)
-					data.scene.o.x += 10;
-				else if (data.event.key.keysym.sym == SDLK_w)
-					data.scene.o.z += 10;
-				else if (data.event.key.keysym.sym == SDLK_s)
-					data.scene.o.z -= 10;
-				else if (data.event.key.keysym.sym == SDLK_ESCAPE)
-				{
-					SDL_DestroyWindow(data.win);
-					SDL_Quit();
-					return (0);
-				}				
-			}
-		}
+			!event(&data) ? exit(0) : 0;
 		SDL_UpdateWindowSurface(data.win);
 	}
 	return (0);

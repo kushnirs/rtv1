@@ -34,7 +34,7 @@ OBJ = $(SRC:.c=.o)
 all: $(SRC) $(SRC_PR) $(NAME)
 
 $(NAME): $(OBJ)
-	@ar rc $(NAME) $(OBJ)
+	ar rc $(NAME) $(OBJ)
 	@ranlib $(NAME)
 
 .c.o:

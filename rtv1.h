@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 16:22:59 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 10:30:23 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,6 @@
 # include "SDL.h"
 # include "SDL_ttf.h"
 # include "ft_printf.h"
-
-# include <stdio.h>
 
 # define DEVICE_TYPE CL_DEVICE_TYPE_GPU
 # define B_SIZE	10000
@@ -111,19 +109,13 @@ typedef struct			s_sdl
 */
 void					parse_param(char *filename, t_sdl *data);
 void					kernel_param(t_sdl *data);
+void					fps(t_sdl *data);
 int						host_fract(char *filename, char *funcname, t_sdl *data);
 int						check_float(char *str, float *res);
 int						check_coord(char *str, t_point *res);
 int						check_int(char *str, int *res);
-void					fps(t_sdl *data);
-/*
-**	color func
-*/
-int						parse_color(int c1, int c2, float t);
-int						parse_color_2(int c1, t_ui t);
-int						average_color(int *color, int smooth);
 /*
 **	handlers
 */
-
+int						event(t_sdl *data);
 #endif

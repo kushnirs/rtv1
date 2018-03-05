@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cl.h"
+#include "rtv1_cl.h"
 /*
 **
 ***********************************COLOR****************************************
@@ -73,6 +73,8 @@ static	void	convert_obj(__constant t_o *o, t_obj *obj, int num)
 		obj[num].name = o[num].name;
 		obj[num].c = (float3){o[num].c.x, o[num].c.y, o[num].c.z};
 		obj[num].d = (float3){o[num].d.x, o[num].d.y, o[num].d.z};
+		if (obj[num].name == PLANE)
+			obj[num].c = cam_rot(obj[num].d, obj[num].c);
 		obj[num].radius = o[num].radius;
 		obj[num].color = o[num].color;
 		obj[num].specular = o[num].specular;
@@ -111,7 +113,7 @@ static	t_scene	convert_scene(t_s s)
 ***********************************UTILITY**************************************
 **
 */
-static float3	cam_rot(float3 rot, float3 coord)
+float3	cam_rot(float3 rot, float3 coord)
 {
 	float3	angle;
 	float3	p[3];
@@ -170,7 +172,10 @@ float3	v_normal(float3 p, t_closest closest)
 		return (n);
 	}
 	else if (closest.closest_obj.name == PLANE)
-		return (closest.closest_obj.d);
+	{
+		n = -closest.closest_obj.c / length(-closest.closest_obj.c);
+		return (n);
+	}
 	n = p - closest.closest_obj.c;
 	n = n / length(n);
 	return (n);
@@ -262,12 +267,14 @@ float2	raycone(float3 o, float3 d, t_obj obj)
 float2	rayplane(float3 o, float3 d, t_obj obj)
 {
 	float3	oc;
+	float3	n;
 	float2	t;
 	float	k[2];
 
+	n = -obj.c / length(-obj.c);
 	oc = o - obj.c;
-	k[0] = dot(d, obj.d);
-	k[1] = dot(oc, obj.d);
+	k[0] = dot(d, n);
+	k[1] = dot(oc, n);
 	if (k[0])
 	{
 		t.x = -k[1] / k[0];

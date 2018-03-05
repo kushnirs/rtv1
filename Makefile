@@ -6,7 +6,7 @@
 #    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/03/02 12:23:34 by skushnir         ###   ########.fr        #
+#    Updated: 2018/03/05 10:32:59 by skushnir         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC			= gcc
 
 CFLAGS		= -Wall -Wextra -Werror -O3
 
-SRC			= rtv1.c handlers.c opencl.c parse.c check.c utility.c
+SRC			= rtv1.c opencl.c parse.c check.c utility.c
 
 HDR			= rtv1.h
 
@@ -38,7 +38,7 @@ $(NAME): $(OBJ) $(HDR) $(LIB)
 	$(CC)  $(CFLAGS) -o $(NAME) $(OBJ) $(LIB) $(INCLUDES) $(FRAMEWORKS)
 
 $(OBJ): %.o : %.c $(HDR)
-	$(CC) $(CFLAGS) -c $< $(INCLUDES)
+	@$(CC) $(CFLAGS) -c $< $(INCLUDES)
 
 lib: 
 	make -C libft;

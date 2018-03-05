@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cl.h                                               :+:      :+:    :+:   */
+/*   rtv1_cl.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/03 01:04:33 by sergee           ###   ########.fr       */
+/*   Updated: 2018/03/05 13:39:09 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CL_H
-# define CL_H
+#ifndef RTV1_CL_H
+# define RTV1_CL_H
 
 # define PI 3.14159265358979323846
 # define DEEP 0
@@ -115,6 +115,7 @@ float					ft_p_d(float3 l, float3 n, float3 v, int s, float intens);
 float3					canvastoviewport(float3 point, t_scene scene);
 void					draw_scene(__global int *buff, t_s scene, __constant t_o *obj, __constant t_l *light);
 float2					q_equation(float k[3]);
+float3					cam_rot(float3 rot, float3 coord);
 /*
 ** ray_obj
 */
@@ -123,5 +124,4 @@ float					intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t);
 float2					raycylinder(float3 o, float3 d, t_obj obj);
 float2					raycone(float3 o, float3 d, t_obj obj);
 float2					rayplane(float3 o, float3 d, t_obj obj);
-
 #endif
