@@ -75,6 +75,8 @@ static	void	convert_obj(__constant t_o *o, t_obj *obj, int num)
 		obj[num].d = (float3){o[num].d.x, o[num].d.y, o[num].d.z};
 		if (obj[num].name == PLANE)
 			obj[num].c = cam_rot(obj[num].d, obj[num].c);
+		if (obj[num].name == SPHERE)
+			obj[num].c = cam_rot(obj[num].d, obj[num].c);
 		obj[num].radius = o[num].radius;
 		obj[num].color = o[num].color;
 		obj[num].specular = o[num].specular;
