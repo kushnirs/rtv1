@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 10:30:23 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/03/05 15:19:54 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ typedef struct			s_sdl
 {
 	SDL_Window			*win;
 	SDL_Surface			*surface;
-	int					*pixel;
+	SDL_Surface			*fps;
 	SDL_Event			event;
 	t_host				host;
 	t_scene				scene;
