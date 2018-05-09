@@ -163,7 +163,8 @@ float3	v_normal(float3 p, t_closest closest)
 	float3		t;
 	float3		n;
 	
-	if (closest.closest_obj.name == CYLINDER || closest.closest_obj.name == CONE)
+	n = p - closest.closest_obj.c;
+	if (closest.closest_obj.name == CYLINDER)
 	{
 		t = (closest.closest_obj.d - closest.closest_obj.c) /
 			length(closest.closest_obj.d - closest.closest_obj.c);
@@ -173,15 +174,49 @@ float3	v_normal(float3 p, t_closest closest)
 		n = n / length(n);
 		return (n);
 	}
-	else if (closest.closest_obj.name == PLANE)
+	else if(closest.closest_obj.name == CONE)
+	{
+		t = (closest.closest_obj.d - p) /
+			length(closest.closest_obj.d - p);
+		n = p - closest.closest_obj.c;
+		proj = t * dot(n, t);
+		n = n - proj;
+		n = n / length(n);
+		return (n);
+	}
+	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC)
 	{
 		n = -closest.closest_obj.c / length(-closest.closest_obj.c);
 		return (n);
+	}
+	else if (closest.closest_obj.name == ELLIPSOID || closest.closest_obj.name == PARABOLID
+		|| closest.closest_obj.name == HYPERBOLID)
+	{
+		float3 coeff = {3.0F, 1.5F, 5.0F};
+		n.x = 2.0F * n.x / coeff.x;
+		n.y = 2.0F * n.y / coeff.y;
+		n.z = 2.0F * n.z / coeff.z;
+		n /= fast_length(n);
 	}
 	n = p - closest.closest_obj.c;
 	n = n / length(n);
 	return (n);
 }
+
+static float			fix_limits(float3 O, float3 D, float3 Va, t_obj obj, float ints)
+{
+	float3	Q;
+	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
+
+	Q = O + D * ints;
+	if (dot(Va, Q - CT) < 0 && obj.name == PARABOLID)
+		return (ints);
+	if (dot(Va, Q - C) > 0 && dot(Va, Q - CT) < 0)
+		return (ints);
+	return (INFINITY);
+}
+
 /*
 **
 ***********************************RAY_OBJ**************************************
@@ -285,6 +320,104 @@ float2	rayplane(float3 o, float3 d, t_obj obj)
 	}
 	return ((float2){INFINITY, INFINITY});
 }
+
+float2	intersect_ray_ellipsoid(float3 O, float3 D, t_obj obj)
+{
+	float	descr;
+	float	k1;
+	float	k2;
+	float	k3;
+	float3	OC;
+	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+
+	OC = O - C;
+	float3 coeff = {3.0F, 1.5F, 5.0F};
+	k1 = (D.x * D.x / coeff.x) + (D.y * D.y / coeff.y) + (D.z * D.z / coeff.z);
+	k2 = (2.0F * OC.x * D.x / coeff.x) + (2.0F * OC.y * D.y / coeff.y) + (2.0F * OC.z * D.z / coeff.z);
+	k3 =  (OC.x * OC.x / coeff.x) + (OC.y * OC.y / coeff.y) + (OC.z * OC.z / coeff.z) - obj.radius * obj.radius;
+
+	descr = k2 * k2 - 4.0F * k1 * k3;
+	if (descr < 0)
+		return ((float2){INFINITY, INFINITY});
+	return ((float2){
+		(-k2 + sqrt(descr)) / (2.0F * k1),
+		(-k2 - sqrt(descr)) / (2.0F * k1)});
+}
+
+float2	intersect_ray_paraboloid(float3 O, float3 D, t_obj obj)
+{
+	float	descr;
+	float	k1;
+	float	k2;
+	float	k3;
+	float2	T;
+	float3	OC;
+	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
+	float3	Va = (CT - C) / fast_length(CT - C);
+
+	OC = O - C;
+	float3 coeff = {3.0F, 1.5F, 5.0F};
+	k1 = (D.x * D.x / coeff.x) + (D.z * D.z / coeff.z);
+	k2 = (2.0F * OC.x * D.x / coeff.x) + (2.0F * OC.z * D.z / coeff.z) - D.y;
+	k3 =  (OC.x * OC.x / coeff.x) + (OC.z * OC.z / coeff.z) - OC.y * 2.0F;
+
+	descr = k2 * k2 - 4.0F * k1 * k3;
+	if (descr < 0)
+		return ((float2){INFINITY, INFINITY});
+	T = (float2){
+		(-k2 + sqrt(descr)) / (2.0F * k1),
+		(-k2 - sqrt(descr)) / (2.0F * k1)}; 
+	T.x = fix_limits(O, D, Va, obj, T.x);
+	T.y = fix_limits(O, D, Va, obj, T.y);
+	return (T);
+}
+
+float2	intersect_ray_hyperbolid(float3 O, float3 D, t_obj obj)
+{
+	float	descr;
+	float	k1;
+	float	k2;
+	float	k3;
+	float2	T;
+	float3	OC;
+	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
+	float3	Va = (CT - C) / fast_length(CT - C);
+
+	OC = O - CT;
+	float3 coeff = {3.0F, 1.5F, 5.0F};
+	k1 = (D.x * D.x / coeff.x) - (D.y * D.y / coeff.y) + (D.z * D.z / coeff.z);
+	k2 = (2.0F * OC.x * D.x / coeff.x) - (2.0F * OC.y * D.y / coeff.y) + (2.0F * OC.z * D.z / coeff.z);
+	k3 =  (OC.x * OC.x / coeff.x) - (OC.y * OC.y / coeff.y) + (OC.z * OC.z / coeff.z) - obj.radius;
+
+	descr = k2 * k2 - 4.0F * k1 * k3;
+	if (descr < 0)
+		return ((float2){INFINITY, INFINITY});
+	T = (float2){
+		(-k2 + sqrt(descr)) / (2.0F * k1),
+		(-k2 - sqrt(descr)) / (2.0F * k1)};
+	T.x = fix_limits(O, D, Va, obj, T.x);
+	T.y = fix_limits(O, D, Va, obj, T.y);
+	return (T);
+}
+
+float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
+{
+	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	float2	T = rayplane(O, D, obj);
+
+	if (T.x != INFINITY)
+	{
+		float3 P = O + D * T.x;
+		float3 OC = P - C;
+		float k = dot(OC, OC);
+        if (k <= obj.radius * obj.radius)
+			return ((float2){T.x, INFINITY});
+	}
+	return ((float2){INFINITY, INFINITY});
+}
+
 /*
 **
 ***********************************LIGHT****************************************
@@ -378,6 +511,14 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = rayplane(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == CONE)
 			t = raycone(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == ELLIPSOID)
+			t = intersect_ray_ellipsoid(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == PARABOLID)
+			t = intersect_ray_paraboloid(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == HYPERBOLID)
+			t = intersect_ray_hyperbolid(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == DISC)
+			t = intersect_ray_disc(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 15:19:54 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/05/08 19:54:38 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include "SDL_ttf.h"
 # include "ft_printf.h"
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
@@ -28,6 +28,10 @@
 # define CYLINDER 2
 # define CONE 3
 # define PLANE 4
+# define ELLIPSOID 5
+# define PARABOLID 6
+# define HYPERBOLID 7
+# define DISC 8
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
