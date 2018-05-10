@@ -450,12 +450,16 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 	float3	P = O + D * T;
 
 	float3	V1 = (P2 - P1) / length(P2 - P1);
-	float3	V2 = P4 - P1;
-	float3	V3 = (P4 - P3) / length(P4 - P3);
-	float3	V4 = (P - P1) / length(P - P1);
-	float3	V5 = (P - P3) / length(P - P3);
+	float3	V2 = (P4 - P3) / length(P4 - P3);
+	float3	V3 = (P - P1) / length(P - P1);
+	float3	V4 = (P - P3) / length(P - P3);
 
-    if (dot(V1, V4) >= 0 && dot(V3, V5) >= 0)
+	float3	V5 = (P1 - P4) / length(P1 - P4);
+	float3	V6 = (P3 - P2) / length(P3 - P2);
+	float3	V7 = (P - P4) / length(P - P4);
+	float3	V8 = (P - P2) / length(P - P2);
+
+    if (dot(V1, V3) >= 0 && dot(V2, V4) >= 0 && dot(V5, V7) >= 0 && dot(V6, V8) >= 0)
 		return ((float2){T, INFINITY});
 	// }
 	return ((float2){INFINITY, INFINITY});
