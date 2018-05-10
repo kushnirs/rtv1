@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1_cl.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/08 19:56:40 by sergee           ###   ########.fr       */
+/*   Updated: 2018/05/10 14:46:47 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # define PARABOLID 6
 # define HYPERBOLID 7
 # define DISC 8
+# define CUBE 9
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
@@ -129,6 +130,7 @@ float2					intersect_ray_ellipsoid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_paraboloid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_hyperbolid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_disc(float3 O, float3 D, t_obj obj);
+float2					intersect_ray_cube(float3 O, float3 D, t_obj obj);
 float2					raycylinder(float3 o, float3 d, t_obj obj);
 float2					raycone(float3 o, float3 d, t_obj obj);
 float2					rayplane(float3 o, float3 d, t_obj obj);

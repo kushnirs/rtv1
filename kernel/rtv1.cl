@@ -162,7 +162,7 @@ float3	v_normal(float3 p, t_closest closest)
 	float3		proj;
 	float3		t;
 	float3		n;
-	
+
 	n = p - closest.closest_obj.c;
 	if (closest.closest_obj.name == CYLINDER)
 	{
@@ -184,7 +184,7 @@ float3	v_normal(float3 p, t_closest closest)
 		n = n / length(n);
 		return (n);
 	}
-	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC)
+	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC || closest.closest_obj.name == CUBE)
 	{
 		n = -closest.closest_obj.c / length(-closest.closest_obj.c);
 		return (n);
@@ -316,7 +316,7 @@ float2	rayplane(float3 o, float3 d, t_obj obj)
 	{
 		t.x = -k[1] / k[0];
 		t.y = INFINITY;
-		return (t);		
+		return (t);
 	}
 	return ((float2){INFINITY, INFINITY});
 }
@@ -367,7 +367,7 @@ float2	intersect_ray_paraboloid(float3 O, float3 D, t_obj obj)
 		return ((float2){INFINITY, INFINITY});
 	T = (float2){
 		(-k2 + sqrt(descr)) / (2.0F * k1),
-		(-k2 - sqrt(descr)) / (2.0F * k1)}; 
+		(-k2 - sqrt(descr)) / (2.0F * k1)};
 	T.x = fix_limits(O, D, Va, obj, T.x);
 	T.y = fix_limits(O, D, Va, obj, T.y);
 	return (T);
@@ -410,11 +410,54 @@ float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 	if (T.x != INFINITY)
 	{
 		float3 P = O + D * T.x;
-		float3 OC = P - C;
-		float k = dot(OC, OC);
+		float3 PC = P - C;
+		float k = dot(PC, PC);
         if (k <= obj.radius * obj.radius)
 			return ((float2){T.x, INFINITY});
 	}
+	return ((float2){INFINITY, INFINITY});
+}
+
+float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
+{
+	// float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	// float2	T = rayplane(O, D, obj);
+
+	// if (T.x != INFINITY)
+	// {
+	// 	float3 P = O + D * T.x;
+ //        if (P.x >= C.x && P.x <= C.x + obj.radius && P.y >= C.y && P.y <= C.y + obj.radius)
+	// 		return ((float2){T.x, INFINITY});
+	// }
+	// return ((float2){INFINITY, INFINITY});
+	// float2	T = rayplane(O, D, obj);
+
+	// if (T.x != INFINITY)
+	// {
+	// float3 P = O + D * T.x;
+	float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
+	float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
+	float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+	float3	P4 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+
+	float A = P1.y * (P2.z - P3.z) + P2.y * (P3.z - P1.z) + P3.y * (P1.z - P2.z);
+	float B = P1.z * (P2.x - P3.x) + P2.z * (P3.x - P1.x) + P3.z * (P1.x - P2.x);
+	float C = P1.x * (P2.y - P3.y) + P2.x * (P3.y - P1.y) + P3.x * (P1.y - P2.y);
+	float F = -P1.x * (P2.y * P3.z - P3.y * P2.z) - P2.x * (P3.y * P1.z - P1.y * P3.z) - P3.x * (P1.y * P2.z - P2.y * P1.z);
+
+	float	T = -(A * O.x + B * O.y + C * O.z + F) / (A * D.x + B * D.y + C * D.z);
+
+	float3	P = O + D * T;
+
+	float3	V1 = (P2 - P1) / length(P2 - P1);
+	float3	V2 = P4 - P1;
+	float3	V3 = (P4 - P3) / length(P4 - P3);
+	float3	V4 = (P - P1) / length(P - P1);
+	float3	V5 = (P - P3) / length(P - P3);
+
+    if (dot(V1, V4) >= 0 && dot(V3, V5) >= 0)
+		return ((float2){T, INFINITY});
+	// }
 	return ((float2){INFINITY, INFINITY});
 }
 
@@ -519,6 +562,8 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_hyperbolid(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == DISC)
 			t = intersect_ray_disc(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == CUBE)
+			t = intersect_ray_cube(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -585,7 +630,7 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	convert_obj(o, obj, scene.n_o);
 	convert_light(l, light, scene.n_l);
 
-	smooth = 2;
+	smooth = 1;
 	i = 0;
 	row = -1;
 	while (++row < smooth)

@@ -6,7 +6,7 @@
 #    By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/01/09 11:17:10 by skushnir          #+#    #+#              #
-#    Updated: 2018/03/05 10:32:59 by skushnir         ###   ########.fr        #
+#    Updated: 2018/05/10 13:09:17 by skushnir         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME		= RTv1
 
 CC			= gcc
 
-CFLAGS		= -Wall -Wextra -Werror -O3
+CFLAGS		= -Wall -Wextra -Werror
 
 SRC			= rtv1.c opencl.c parse.c check.c utility.c
 
@@ -40,7 +40,7 @@ $(NAME): $(OBJ) $(HDR) $(LIB)
 $(OBJ): %.o : %.c $(HDR)
 	@$(CC) $(CFLAGS) -c $< $(INCLUDES)
 
-lib: 
+lib:
 	make -C libft;
 clean:
 	@make -C libft clean;

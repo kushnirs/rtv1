@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   opencl.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/08 16:36:19 by sergee           ###   ########.fr       */
+/*   Updated: 2018/05/10 13:08:08 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void		kernel_param(t_sdl *data)
 static void	host_program(char *funcname, char *str, int size, t_sdl *data)
 {
 	cl_int	ret;
+	const size_t	s = (size_t)size;
 
 	data->host.com_queue = clCreateCommandQueue(data->host.context,
 		data->host.dev_id, 0, &ret);
@@ -54,7 +55,7 @@ static void	host_program(char *funcname, char *str, int size, t_sdl *data)
 		sizeof(t_light) * data->scene.n_l, data->light, &ret);
 	ret ? exit(ft_printf("clCreateLight Failed\n")) : 0;
 	data->host.program = clCreateProgramWithSource(data->host.context, 1,
-		(const char **)&str, (const size_t *)&size, &ret);
+		(const char **)&str, (const size_t *)&s, &ret);
 	ret ? exit(ft_printf("clCreateProgramWithSource Failed\n")) : 0;
 	(ret = clBuildProgram(data->host.program, 1, &data->host.dev_id,
 	"-I ./kernel", NULL, NULL));
