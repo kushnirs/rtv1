@@ -184,12 +184,64 @@ float3	v_normal(float3 p, t_closest closest)
 		n = n / length(n);
 		return (n);
 	}
-	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC || closest.closest_obj.name == CUBE)
+	else if (closest.closest_obj.name == PLANE
+		|| closest.closest_obj.name == DISC)
 	{
 		n = -closest.closest_obj.c / length(-closest.closest_obj.c);
 		return (n);
 	}
-	else if (closest.closest_obj.name == ELLIPSOID || closest.closest_obj.name == PARABOLID
+	else if (closest.closest_obj.name == CUBE)
+	{
+		float NP[6];
+		//front side
+		t_obj obj = closest.closest_obj;
+		float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
+		float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
+		float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+		float N = dot(P2 - P1, P3 - P1);
+		NP[0] = dot(N, p - P1);
+		//back side
+		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+		P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+		P3 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		N = dot(P2 - P1, P3 - P1);
+		NP[1] = dot(N, p - P1);
+		//left side
+		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+		P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+		P3 = (float3){obj.c.x, obj.c.y, obj.c.z};
+		N = dot(P2 - P1, P3 - P1);
+		NP[2] = dot(N, p - P1);
+		//right side
+		P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
+		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N = dot(P2 - P1, P3 - P1);
+		NP[3] = dot(N, p - P1);
+		//down side
+		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+		P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		P3 = (float3){obj.c.x, obj.c.y, obj.c.z};
+		N = dot(P2 - P1, P3 - P1);
+		NP[4] = dot(N, p - P1);
+		//up side
+		P1 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+		P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
+		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N = dot(P2 - P1, P3 - P1);
+		NP[5] = dot(N, p - P1);
+
+		// printf("%.2f ", NP[5]);
+
+		int i  = -1;
+		while (++i < 6)
+			if (NP[i])
+				break;
+		n = NP[i] / length(NP[i]);
+		return (n);
+	}
+	else if (closest.closest_obj.name == ELLIPSOID
+		|| closest.closest_obj.name == PARABOLID
 		|| closest.closest_obj.name == HYPERBOLID)
 	{
 		float3 coeff = {3.0F, 1.5F, 5.0F};
@@ -418,35 +470,14 @@ float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 	return ((float2){INFINITY, INFINITY});
 }
 
-float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
+static float	intersect_ray_rectangle(float3 P1, float3 P2, float3 P3, float3 P4, float3 O, float3 D)
 {
-	// float3	C = {obj.c.x, obj.c.y, obj.c.z};
-	// float2	T = rayplane(O, D, obj);
-
-	// if (T.x != INFINITY)
-	// {
-	// 	float3 P = O + D * T.x;
- //        if (P.x >= C.x && P.x <= C.x + obj.radius && P.y >= C.y && P.y <= C.y + obj.radius)
-	// 		return ((float2){T.x, INFINITY});
-	// }
-	// return ((float2){INFINITY, INFINITY});
-	// float2	T = rayplane(O, D, obj);
-
-	// if (T.x != INFINITY)
-	// {
-	// float3 P = O + D * T.x;
-	float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
-	float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
-	float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
-	float3	P4 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
-
 	float A = P1.y * (P2.z - P3.z) + P2.y * (P3.z - P1.z) + P3.y * (P1.z - P2.z);
 	float B = P1.z * (P2.x - P3.x) + P2.z * (P3.x - P1.x) + P3.z * (P1.x - P2.x);
 	float C = P1.x * (P2.y - P3.y) + P2.x * (P3.y - P1.y) + P3.x * (P1.y - P2.y);
 	float F = -P1.x * (P2.y * P3.z - P3.y * P2.z) - P2.x * (P3.y * P1.z - P1.y * P3.z) - P3.x * (P1.y * P2.z - P2.y * P1.z);
 
 	float	T = -(A * O.x + B * O.y + C * O.z + F) / (A * D.x + B * D.y + C * D.z);
-
 	float3	P = O + D * T;
 
 	float3	V1 = (P2 - P1) / length(P2 - P1);
@@ -460,9 +491,55 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 	float3	V8 = (P - P2) / length(P - P2);
 
     if (dot(V1, V3) >= 0 && dot(V2, V4) >= 0 && dot(V5, V7) >= 0 && dot(V6, V8) >= 0)
-		return ((float2){T, INFINITY});
-	// }
-	return ((float2){INFINITY, INFINITY});
+		return (T);
+	return (INFINITY);
+}
+
+float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
+{
+	//front
+	float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
+	float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
+	float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+	float3	P4 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	//back
+	P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+	P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+	P3 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
+	P4 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	float T1 = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	T1 < T ? T = T1 : 0;
+	//left
+	P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+	P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+	P3 = (float3){obj.c.x, obj.c.y + obj.radius, obj.c.z};
+	P4 = (float3){obj.c.x, obj.c.y, obj.c.z};
+	float T2 = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	//right
+	P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
+	P3 = (float3){obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+	P4 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T3 = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	T3 < T2 ? T2 = T3 : 0;
+	//down
+	P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	P4 = (float3){obj.c.x, obj.c.y, obj.c.z};
+	float T4 = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	//up
+	P1 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
+	P3 = (float3){obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+	P4 = (float3){obj.c.x, obj.c.y + obj.radius, obj.c.z};
+	float T5 = intersect_ray_rectangle(P1, P2, P3, P4, O, D);
+	T5 < T4 ? T4 = T5 : 0;
+
+	T2 < T ? T = T2 : 0;
+	T4 < T ? T = T4 : 0;
+	return ((float2)(T, INFINITY));
 }
 
 /*
