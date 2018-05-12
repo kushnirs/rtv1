@@ -158,12 +158,6 @@ float2	q_equation(float k[3])
 	return (t);
 }
 
-static float3 vectors(float3 a, float3 b)
-{
-	float3 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - b.x * a.y};
-	return (c);
-}
-
 float3	v_normal(float3 p, t_closest closest)
 {
 	float3		proj;
@@ -191,8 +185,7 @@ float3	v_normal(float3 p, t_closest closest)
 		n = n / fast_length(n);
 		return (n);
 	}
-	else if (closest.closest_obj.name == PLANE
-		|| closest.closest_obj.name == DISC)
+	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC)
 	{
 		n = -closest.closest_obj.c / fast_length(-closest.closest_obj.c);
 		return (n);
@@ -206,44 +199,36 @@ float3	v_normal(float3 p, t_closest closest)
 		float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
 		float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
 		float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
-		N[0] = vectors(P2 - P1, P3 - P1);
+		N[0] = cross(P3 - P1, P2 - P1);
 		NP[0] = dot(N[0], p - P1);
 		//back side
+		N[1] = cross(P2 - P1, P3 - P1);
 		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
-		P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
-		P3 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-		N[1] = vectors(P2 - P1, P3 - P1);
 		NP[1] = dot(N[1], p - P1);
 		//left side
 		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
 		P2 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
 		P3 = (float3){obj.c.x, obj.c.y, obj.c.z};
-		N[2] = vectors(P2 - P1, P3 - P1);
+		N[2] = cross(P3 - P1, P2 - P1);
 		NP[2] = dot(N[2], p - P1);
 		//right side
+		N[3] = cross(P2 - P1, P3 - P1);
 		P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-		P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
-		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
-		N[3] = vectors(P2 - P1, P3 - P1);
 		NP[3] = dot(N[3], p - P1);
 		//down side
 		P1 = (float3){obj.d.x, obj.d.y, obj.d.z};
 		P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
 		P3 = (float3){obj.c.x, obj.c.y, obj.c.z};
-		N[4] = vectors(P2 - P1, P3 - P1);
+		N[4] = cross(P3 - P1, P2 - P1);
 		NP[4] = dot(N[4], p - P1);
 		//up side
+		N[5] = cross(P2 - P1, P3 - P1);
 		P1 = (float3){obj.d.x, obj.d.y + obj.radius, obj.d.z};
-		P2 = (float3){obj.d.x + obj.radius, obj.d.y + obj.radius, obj.d.z};
-		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
-		N[5] = vectors(P2 - P1, P3 - P1);
 		NP[5] = dot(N[5], p - P1);
-
-		// printf("%.2f ", NP[1]);
 
 		int i  = -1;
 		while (++i < 6)
-			if (NP[i])
+			if (NP[i] < 5.0F && NP[i] > -5.0f)
 				break;
 		n = N[i] / fast_length(N[i]);
 		return (n);
@@ -464,7 +449,7 @@ float2	intersect_ray_hyperbolid(float3 O, float3 D, t_obj obj)
 
 float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 {
-	float3	C = {obj.c.x, obj.c.y, obj.c.z};
+	float3	C = obj.d;
 	float2	T = rayplane(O, D, obj);
 
 	if (T.x != INFINITY)
