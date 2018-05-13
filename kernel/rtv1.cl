@@ -172,7 +172,7 @@ float3	v_normal(float3 p, t_closest closest)
 		n = p - closest.closest_obj.c;
 		proj = t * dot(n, t);
 		n = n - proj;
-		n = n / fast_length(n);
+		n = fast_normalize(n);
 		return (n);
 	}
 	else if(closest.closest_obj.name == CONE)
@@ -182,12 +182,12 @@ float3	v_normal(float3 p, t_closest closest)
 		n = p - closest.closest_obj.c;
 		proj = t * dot(n, t);
 		n = n - proj;
-		n = n / fast_length(n);
+		n = fast_normalize(n);
 		return (n);
 	}
 	else if (closest.closest_obj.name == PLANE || closest.closest_obj.name == DISC)
 	{
-		n = -closest.closest_obj.c / fast_length(-closest.closest_obj.c);
+		n = fast_normalize(-closest.closest_obj.c);
 		return (n);
 	}
 	else if (closest.closest_obj.name == CUBE)
@@ -230,7 +230,7 @@ float3	v_normal(float3 p, t_closest closest)
 		while (++i < 6)
 			if (NP[i] < 5.0F && NP[i] > -5.0f)
 				break;
-		n = N[i] / fast_length(N[i]);
+		n = fast_normalize(N[i]);
 		return (n);
 	}
 	else if (closest.closest_obj.name == ELLIPSOID
@@ -241,10 +241,11 @@ float3	v_normal(float3 p, t_closest closest)
 		n.x = 2.0F * n.x / coeff.x;
 		n.y = 2.0F * n.y / coeff.y;
 		n.z = 2.0F * n.z / coeff.z;
-		n /= fast_length(n);
+		n = fast_normalize(n);
+		return (n);
 	}
 	n = p - closest.closest_obj.c;
-	n = n / fast_length(n);
+	n = fast_normalize(n);
 	return (n);
 }
 
@@ -307,7 +308,7 @@ float2	raycylinder(float3 o, float3 d, t_obj obj)
 	float3	a[2];
 	float	k[3];
 
-	v = (obj.d - obj.c) / length(obj.d - obj.c);
+	v = (obj.d - obj.c) / fast_length(obj.d - obj.c);
 	p = o - obj.c;
 	a[0] = d - v * dot(d, v);
 	k[0] = dot(a[0], a[0]);
@@ -330,7 +331,7 @@ float2	raycone(float3 o, float3 d, t_obj obj)
 	float	k[3];
 
 	angle = PI * obj.radius / 180;
-	v = (obj.d - obj.c) / length(obj.d - obj.c);
+	v = (obj.d - obj.c) / fast_length(obj.d - obj.c);
 	p = o - obj.d;
 	a[0] = d - v * dot(d, v);
 	k[0] = cos(angle) * cos(angle) * dot(a[0], a[0]);
@@ -465,23 +466,27 @@ float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 
 static float	intersect_ray_rectangle(float3 P1, float3 P2, float3 P3, float3 P4, float3 O, float3 D)
 {
-	float A = P1.y * (P2.z - P3.z) + P2.y * (P3.z - P1.z) + P3.y * (P1.z - P2.z);
-	float B = P1.z * (P2.x - P3.x) + P2.z * (P3.x - P1.x) + P3.z * (P1.x - P2.x);
-	float C = P1.x * (P2.y - P3.y) + P2.x * (P3.y - P1.y) + P3.x * (P1.y - P2.y);
+	float3 Q = cross(P2 - P1, P4 - P1);
+	// float A = P1.y * (P2.z - P3.z) + P2.y * (P3.z - P1.z) + P3.y * (P1.z - P2.z);
+	// float B = P1.z * (P2.x - P3.x) + P2.z * (P3.x - P1.x) + P3.z * (P1.x - P2.x);
+	// float C = P1.x * (P2.y - P3.y) + P2.x * (P3.y - P1.y) + P3.x * (P1.y - P2.y);
 	float F = -P1.x * (P2.y * P3.z - P3.y * P2.z) - P2.x * (P3.y * P1.z - P1.y * P3.z) - P3.x * (P1.y * P2.z - P2.y * P1.z);
 
-	float	T = -(A * O.x + B * O.y + C * O.z + F) / (A * D.x + B * D.y + C * D.z);
+	// float	T = -(A * O.x + B * O.y + C * O.z + F) / (A * D.x + B * D.y + C * D.z);
+	float	T = -(Q.x * O.x + Q.y * O.y + Q.z * O.z + F) / (Q.x * D.x + Q.y * D.y + Q.z * D.z);
+	if (T < 0)
+		return (INFINITY);
 	float3	P = O + D * T;
 
-	float3	V1 = (P2 - P1) / length(P2 - P1);
-	float3	V2 = (P4 - P3) / length(P4 - P3);
-	float3	V3 = (P - P1) / length(P - P1);
-	float3	V4 = (P - P3) / length(P - P3);
+	float3	V1 = (P2 - P1) / fast_length(P2 - P1);
+	float3	V2 = (P4 - P3) / fast_length(P4 - P3);
+	float3	V3 = (P - P1) / fast_length(P - P1);
+	float3	V4 = (P - P3) / fast_length(P - P3);
 
-	float3	V5 = (P1 - P4) / length(P1 - P4);
-	float3	V6 = (P3 - P2) / length(P3 - P2);
-	float3	V7 = (P - P4) / length(P - P4);
-	float3	V8 = (P - P2) / length(P - P2);
+	float3	V5 = (P1 - P4) / fast_length(P1 - P4);
+	float3	V6 = (P3 - P2) / fast_length(P3 - P2);
+	float3	V7 = (P - P4) / fast_length(P - P4);
+	float3	V8 = (P - P2) / fast_length(P - P2);
 
     if (dot(V1, V3) >= 0 && dot(V2, V4) >= 0 && dot(V5, V7) >= 0 && dot(V6, V8) >= 0)
 		return (T);
