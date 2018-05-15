@@ -169,7 +169,6 @@ float3	v_normal(float3 p, t_closest closest)
 	{
 		t = (closest.closest_obj.d - closest.closest_obj.c) /
 			fast_length(closest.closest_obj.d - closest.closest_obj.c);
-		n = p - closest.closest_obj.c;
 		proj = t * dot(n, t);
 		n = n - proj;
 		n = fast_normalize(n);
@@ -179,7 +178,6 @@ float3	v_normal(float3 p, t_closest closest)
 	{
 		t = (closest.closest_obj.d - p) /
 			fast_length(closest.closest_obj.d - p);
-		n = p - closest.closest_obj.c;
 		proj = t * dot(n, t);
 		n = n - proj;
 		n = fast_normalize(n);
@@ -233,9 +231,25 @@ float3	v_normal(float3 p, t_closest closest)
 		n = fast_normalize(N[i]);
 		return (n);
 	}
-	else if (closest.closest_obj.name == ELLIPSOID
-		|| closest.closest_obj.name == PARABOLID
-		|| closest.closest_obj.name == HYPERBOLID)
+	else if (closest.closest_obj.name == PARABOLID)
+	{
+		float3 coeff = {3.0F, 1.5F, 5.0F};
+		n.x = 2.0F * n.x / coeff.x;
+		n.y = -2.0f;
+		n.z = 2.0F * n.z / coeff.z;
+		n = fast_normalize(n);
+		return (n);
+	}
+	else if (closest.closest_obj.name == HYPERBOLID)
+	{
+		float3 coeff = {3.0F, 1.5F, 5.0F};
+		n.x = 2.0F * n.x / coeff.x;
+		n.y = -2.0f * n.y / coeff.y;
+		n.z = 2.0F * n.z / coeff.z;
+		n = fast_normalize(n);
+		return (n);
+	}
+	else if (closest.closest_obj.name == ELLIPSOID)
 	{
 		float3 coeff = {3.0F, 1.5F, 5.0F};
 		n.x = 2.0F * n.x / coeff.x;
@@ -354,7 +368,7 @@ float2	rayplane(float3 o, float3 d, t_obj obj)
 	float2	t;
 	float	k[2];
 
-	n = -obj.c / length(-obj.c);
+	n = -obj.c / fast_length(-obj.c);
 	oc = o - obj.c;
 	k[0] = dot(d, n);
 	k[1] = dot(oc, n);
@@ -554,12 +568,12 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 
 	i = 0.0f;
 	nl = dot(n, l);
-	nl > 0.0f ? i += intens * nl / (length(n) * length(l)) : 0;
+	nl > 0.0f ? i += intens * nl / (fast_length(n) * fast_length(l)) : 0;
 	if (s >= 0)
 	{
 		r = 2.0f * n * dot(n, l) - l;
 		rv = dot(r, v);
-		rv > 0.0f ? i += intens * pow(rv / (length(r) * length(v)), s) : 0;
+		rv > 0.0f ? i += intens * pow(rv / (fast_length(r) * fast_length(v)), s) : 0;
 	}
 	return (i);
 }
