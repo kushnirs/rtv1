@@ -258,7 +258,6 @@ float3	v_normal(float3 p, t_closest closest)
 		n = fast_normalize(n);
 		return (n);
 	}
-	n = p - closest.closest_obj.c;
 	n = fast_normalize(n);
 	return (n);
 }
@@ -270,7 +269,9 @@ static float			fix_limits(float3 O, float3 D, float3 Va, t_obj obj, float ints)
 	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
 
 	Q = O + D * ints;
-	if (dot(Va, Q - CT) < 0 && obj.name == PARABOLID)
+	if (Q.y < CT.y && obj.name == PARABOLID)
+		return (ints);
+	else if (Q.y > -(CT.y - C.y * 2.0F) && Q.y < CT.y && obj.name == HYPERBOLID)
 		return (ints);
 	if (dot(Va, Q - C) > 0 && dot(Va, Q - CT) < 0)
 		return (ints);
@@ -413,14 +414,13 @@ float2	intersect_ray_paraboloid(float3 O, float3 D, t_obj obj)
 	float2	T;
 	float3	OC;
 	float3	C = {obj.c.x, obj.c.y, obj.c.z};
-	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
-	float3	Va = (CT - C) / fast_length(CT - C);
+	float3	Va = C / fast_length(C);
 
 	OC = O - C;
 	float3 coeff = {3.0F, 1.5F, 5.0F};
 	k1 = (D.x * D.x / coeff.x) + (D.z * D.z / coeff.z);
 	k2 = (2.0F * OC.x * D.x / coeff.x) + (2.0F * OC.z * D.z / coeff.z) - D.y;
-	k3 =  (OC.x * OC.x / coeff.x) + (OC.z * OC.z / coeff.z) - OC.y * 2.0F;
+	k3 =  (OC.x * OC.x / coeff.x) + (OC.z * OC.z / coeff.z) - OC.y;
 
 	descr = k2 * k2 - 4.0F * k1 * k3;
 	if (descr < 0)
@@ -445,7 +445,7 @@ float2	intersect_ray_hyperbolid(float3 O, float3 D, t_obj obj)
 	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
 	float3	Va = (CT - C) / fast_length(CT - C);
 
-	OC = O - CT;
+	OC = O - C;
 	float3 coeff = {3.0F, 1.5F, 5.0F};
 	k1 = (D.x * D.x / coeff.x) - (D.y * D.y / coeff.y) + (D.z * D.z / coeff.z);
 	k2 = (2.0F * OC.x * D.x / coeff.x) - (2.0F * OC.y * D.y / coeff.y) + (2.0F * OC.z * D.z / coeff.z);
@@ -481,12 +481,8 @@ float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 static float	intersect_ray_rectangle(float3 P1, float3 P2, float3 P3, float3 P4, float3 O, float3 D)
 {
 	float3 Q = cross(P2 - P1, P4 - P1);
-	// float A = P1.y * (P2.z - P3.z) + P2.y * (P3.z - P1.z) + P3.y * (P1.z - P2.z);
-	// float B = P1.z * (P2.x - P3.x) + P2.z * (P3.x - P1.x) + P3.z * (P1.x - P2.x);
-	// float C = P1.x * (P2.y - P3.y) + P2.x * (P3.y - P1.y) + P3.x * (P1.y - P2.y);
 	float F = -P1.x * (P2.y * P3.z - P3.y * P2.z) - P2.x * (P3.y * P1.z - P1.y * P3.z) - P3.x * (P1.y * P2.z - P2.y * P1.z);
 
-	// float	T = -(A * O.x + B * O.y + C * O.z + F) / (A * D.x + B * D.y + C * D.z);
 	float	T = -(Q.x * O.x + Q.y * O.y + Q.z * O.z + F) / (Q.x * D.x + Q.y * D.y + Q.z * D.z);
 	if (T < 0)
 		return (INFINITY);
