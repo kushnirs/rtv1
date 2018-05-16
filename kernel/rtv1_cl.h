@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/10 14:46:47 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/05/16 11:27:09 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # define PI 3.14159265358979323846
 # define DEEP 3
+
 # define SPHERE 1
 # define CYLINDER 2
 # define CONE 3
@@ -24,6 +25,8 @@
 # define HYPERBOLID 7
 # define DISC 8
 # define CUBE 9
+# define FRACT 10
+
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
@@ -131,6 +134,7 @@ float2					intersect_ray_paraboloid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_hyperbolid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_disc(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_cube(float3 O, float3 D, t_obj obj);
+int						intersect_ray_fract(float3 O, float3 D, t_obj obj);
 float2					raycylinder(float3 o, float3 d, t_obj obj);
 float2					raycone(float3 o, float3 d, t_obj obj);
 float2					rayplane(float3 o, float3 d, t_obj obj);

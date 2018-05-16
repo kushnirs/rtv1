@@ -16,6 +16,7 @@
 ***********************************COLOR****************************************
 **
 */
+
 static int	parse_color(int c1, int c2, float t)
 {
 	int dr;
@@ -60,6 +61,20 @@ static int	average_color(int *color, int smooth)
 	d[1] /= smooth * smooth;
 	d[2] /= smooth * smooth;
 	return (d[0] * 0x10000 + d[1] * 0x100 + d[2]);
+}
+
+static int		parse_color_(int c1, unsigned int it)
+{
+	double			t;
+	unsigned char	dr;
+	unsigned char	dg;
+	unsigned char	db;
+
+	t = (double)c1 / (double)it;
+	dr = 9 * (1 - t) * t * t * t * 255;
+	dg = 15 * (1 - t) * (1 - t) * t * t * 255;
+	db = 8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255;
+	return (dr * 0x10000 + dg * 0x100 + db);
 }
 /*
 **
@@ -550,6 +565,23 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 	return ((float2)(T, INFINITY));
 }
 
+int	intersect_ray_fract(float3 O, float3 D, t_obj obj)
+{
+	float	r = sqrt(dot(D,D));
+	float	theta = atan2(sqrt(D.y * D.y + D.x * D.x), D.z);
+	float	phi = atan2(D.y, D.x);
+	float	n = 8.0f;
+	float	x = pow(r, n) * sin(theta * n) * cos(phi * n);
+	float	y = pow(r, n) * sin(theta * n) * sin(phi * n);
+	float	z = pow(r, n) * cos(theta * n);
+
+	int		i = 0;
+
+	while (z < 4.0f && ++i < 128)
+		z = pow(z, n) + (x - obj.c.x + O.x) + (y - obj.c.y + O.y);
+	return (parse_color_(i, 128));
+}
+
 /*
 **
 ***********************************LIGHT****************************************
@@ -653,6 +685,12 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_disc(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == CUBE)
 			t = intersect_ray_cube(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == FRACT)
+		{
+			closest.closest_obj = obj[i];
+			closest.closest_obj.color = intersect_ray_fract(scene.o, scene.d, obj[i]);
+			return (closest);
+		}
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -679,6 +717,8 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	while (deep >= 0)
 	{
 		closest = intersections(scene, obj);
+		if (closest.closest_obj.name == FRACT)
+			return (closest.closest_obj.color);
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;
