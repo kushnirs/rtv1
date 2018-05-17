@@ -567,20 +567,49 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 
 int	intersect_ray_fract(float3 O, float3 D, t_obj obj)
 {
-	float	r = sqrt(dot(D,D));
-	float	theta = atan2(sqrt(D.y * D.y + D.x * D.x), D.z);
-	float	phi = atan2(D.y, D.x);
-	float	n = 8.0f;
-	float	x = pow(r, n) * sin(theta * n) * cos(phi * n);
-	float	y = pow(r, n) * sin(theta * n) * sin(phi * n);
-	float	z = pow(r, n) * cos(theta * n);
+	for (int p = 0; p < 100; p++)
+	{
+		float3 C = {D.x - obj.c.x + O.x, D.y - obj.c.y + O.y, float(p)};
+		float res;
+		int i = -1;
+		while (++i < 4)
+		{
+			float	r = sqrt(dot(C,C));
+			float	theta = atan2(sqrt(C.y * C.y + C.x * C.x), C.z);
+			float	phi = atan2(C.y, C.x);
+			float	n = 8.0f;
+			float3	R;
+			R.x = pow(r, n) * sin(theta * n) * cos(phi * n);
+			R.y = pow(r, n) * sin(theta * n) * sin(phi * n);
+			R.z = pow(r, n) * cos(theta * n);
 
-	int		i = 0;
-
-	while (z < 4.0f && ++i < 128)
-		z = pow(z, n) + (x - obj.c.x + O.x) + (y - obj.c.y + O.y);
-	return (parse_color_(i, 128));
+			R = R + C;
+			res = sqrt(dot(R,R));
+			if (res > 1.0f)
+				break;
+		}
+		if (i <= 4 && res < 1.0f)
+			return (255);
+	}
+	return (0);
 }
+
+// int	intersect_ray_fract(float3 O, float3 D, t_obj obj)
+// {
+// 	float		x = D.x;
+// 	float		y = D.y;
+// 	int			i = 0;
+// 	float		a[2] = {0, 0};
+// 	float		b = 0;
+
+// 	while ((a[0] * a[0] + b * b) < 4.0 && ++i < 128)
+// 	{
+// 		a[1] = a[0] * a[0] - b * b -0.75 + (x - obj.c.x + O.x) * 0.03;
+// 		b = 2 * a[0] * b + (y - obj.c.y + O.y) * 0.03;
+// 		a[0] = a[1];
+// 	}
+// 	return (parse_color_(i, 128));
+// }
 
 /*
 **
