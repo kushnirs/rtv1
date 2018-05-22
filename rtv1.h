@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/17 12:48:31 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/05/22 16:32:22 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include "SDL_ttf.h"
 # include "ft_printf.h"
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
@@ -33,6 +33,8 @@
 # define HYPERBOLID 7
 # define DISC 8
 # define CUBE 9
+# define TORUS 10
+# define FRACT 11
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3
