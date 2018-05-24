@@ -33,8 +33,9 @@
 # define HYPERBOLID 7
 # define DISC 8
 # define CUBE 9
-# define TORUS 10
-# define FRACT 11
+# define PIRAMID 10
+# define TETRAHEDRON 11
+
 # define POINT 1
 # define DIRECTION 2
 # define AMBIENT 3

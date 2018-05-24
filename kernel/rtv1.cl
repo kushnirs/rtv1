@@ -211,7 +211,7 @@ float3	v_normal(float3 p, t_closest closest)
 		t_obj obj = closest.closest_obj;
 		float3	P1 = {obj.c.x, obj.c.y, obj.c.z};
 		float3	P2 = {obj.c.x, obj.c.y + obj.radius, obj.c.z};
-		float3	P3 = {obj.c.x + obj.radius, obj.c.y + obj.radius, obj.c.z};
+		float3	P3 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
 		N[0] = cross(P3 - P1, P2 - P1);
 		NP[0] = dot(N[0], p - P1);
 		//back side
@@ -241,6 +241,96 @@ float3	v_normal(float3 p, t_closest closest)
 
 		int i  = -1;
 		while (++i < 6)
+			if (NP[i] < 5.0F && NP[i] > -5.0f)
+				break;
+		n = fast_normalize(N[i]);
+		return (n);
+	}
+	else if (closest.closest_obj.name == PIRAMID)
+	{
+		float3 N[5];
+		float NP[5];
+		t_obj obj = closest.closest_obj;
+
+		float3	A = obj.d;
+		float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		float3	C = (A + B) / 2.0F;
+		C.y += obj.radius;
+
+		//front side
+		float3	P1 = obj.c;
+		float3	P3 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N[0] = cross(P3 - P1, C - P1);
+		NP[0] = dot(N[0], p - P1);
+		//back side
+		P1 = obj.d;
+		P3 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		N[1] = cross(P3 - P1, C - P1);
+		NP[1] = dot(N[1], p - P1);
+		//left side
+		P1 = obj.c;
+		P3 = obj.d;
+		N[2] = cross(P3 - P1, C - P1);
+		NP[2] = dot(N[2], p - P1);
+		//right side
+		P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N[3] = cross(P3 - P1, C - P1);
+		NP[3] = dot(N[3], p - P1);
+		//down side
+		P1 = obj.d;
+		float3	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		P3 = obj.c;
+		N[4] = cross(P3 - P1, P2 - P1);
+		NP[4] = dot(N[4], p - P1);
+
+		int i  = -1;
+		while (++i < 5)
+			if (NP[i] < 5.0F && NP[i] > -5.0f)
+				break;
+		n = fast_normalize(N[i]);
+		return (n);
+	}
+	else if (closest.closest_obj.name == TETRAHEDRON)
+	{
+		float3 N[5];
+		float NP[5];
+		t_obj obj = closest.closest_obj;
+
+		float3	A = obj.d;
+		float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		float3	C = (A + B) / 2.0F;
+		C.y += obj.radius;
+
+		//front side
+		float3	P1 = obj.c;
+		float3	P3 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N[0] = cross(P3 - P1, C - P1);
+		NP[0] = dot(N[0], p - P1);
+		//back side
+		P1 = obj.d;
+		P3 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		N[1] = cross(P3 - P1, C - P1);
+		NP[1] = dot(N[1], p - P1);
+		//left side
+		P1 = obj.c;
+		P3 = obj.d;
+		N[2] = cross(P3 - P1, C - P1);
+		NP[2] = dot(N[2], p - P1);
+		//right side
+		P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+		N[3] = cross(P3 - P1, C - P1);
+		NP[3] = dot(N[3], p - P1);
+		//down side
+		P1 = obj.c;
+		float3	P2 = (float3){obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
+		P3 = obj.d;
+		N[4] = cross(P3 - P1, P2 - P1);
+		NP[4] = dot(N[4], p - P1);
+
+		int i  = -1;
+		while (++i < 5)
 			if (NP[i] < 5.0F && NP[i] > -5.0f)
 				break;
 		n = fast_normalize(N[i]);
@@ -499,27 +589,6 @@ float2	intersect_ray_disc(float3 O, float3 D, t_obj obj)
 
 static float	intersect_ray_triangle(float3 P1, float3 P2, float3 P3, float3 O, float3 D)
 {
-	// float3 Q = cross(P2 - P1, P4 - P1);
-	// float F = -P1.x * (P2.y * P3.z - P3.y * P2.z) - P2.x * (P3.y * P1.z - P1.y * P3.z) - P3.x * (P1.y * P2.z - P2.y * P1.z);
-
-	// float	T = -(Q.x * O.x + Q.y * O.y + Q.z * O.z + F) / (Q.x * D.x + Q.y * D.y + Q.z * D.z);
-	// if (T < -5.0f)
-	// 	return (INFINITY);
-	// float3	P = O + D * T;
-
-	// float3	V1 = (P2 - P1) / fast_length(P2 - P1);
-	// float3	V2 = (P4 - P3) / fast_length(P4 - P3);
-	// float3	V3 = (P - P1) / fast_length(P - P1);
-	// float3	V4 = (P - P3) / fast_length(P - P3);
-
-	// float3	V5 = (P1 - P4) / fast_length(P1 - P4);
-	// float3	V6 = (P3 - P2) / fast_length(P3 - P2);
-	// float3	V7 = (P - P4) / fast_length(P - P4);
-	// float3	V8 = (P - P2) / fast_length(P - P2);
-
- //    if (dot(V1, V3) >= 0 && dot(V2, V4) >= 0 && dot(V5, V7) >= 0 && dot(V6, V8) >= 0)
-	// 	return (T);
-
 	float3 e1 = P2 - P1;
     float3 e2 = P3 - P1;
     float3 pvec = cross(D, e2);
@@ -597,117 +666,79 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 	return ((float2)(T, INFINITY));
 }
 
-// float2	intersect_ray_torus(float3 O, float3 D, t_obj obj)
-// {
-// 	float m = dot(D, D);
-// 	float n = dot(D, O - obj.c);
-// 	float o = dot(O - obj.c, O - obj.c);
-// 	float p = dot(D, obj.d - obj.c);
-// 	float q = dot(O - obj.c, obj.d - obj.c);
 
-// 	float radius2 = 5.0f;
+float2	intersect_ray_piramid(float3 O, float3 D, t_obj obj)
+{
+	float3	A = obj.d;
+	float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float3	C = (A + B) / 2.0F;
+	C.y += obj.radius;
+	//front
+	float3	P1 = obj.c;
+	float3	P2 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T = intersect_ray_triangle(P1, P2, C, O, D);
+	//back
+	P1 = obj.d;
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	float T1 = intersect_ray_triangle(P1, P2, C, O, D);
+	T1 < T ? T = T1 : 0;
+	// //left
+	P1 = obj.d;
+	P2 = obj.c;
+	float T2 = intersect_ray_triangle(P1, P2, C, O, D);
+	// //right
+	P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	P2 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T3 = intersect_ray_triangle(P1, P2, C, O, D);
+	T3 < T2 ? T2 = T3 : 0;
+	// //down
+	P1 = obj.d;
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	float3	P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float3	P4 = obj.c;
+	float T4 = intersect_ray_triangle(P1, P2, P4, O, D);
+	T4 == INFINITY ? T4 = intersect_ray_triangle(P3, P2, P4, O, D) : 0;
 
-// 	float a = m * m;
-// 	float b = 4.0f * m * n;
-// 	float c = 4.0f * m * m + 2.0f * m * o - 2.0f * (obj.radius * obj.radius + radius2 * radius2) * m + 4.0f * obj.radius * obj.radius * p * p;
-//   	float d = 4.0f * n * o - 4.0f * (obj.radius * obj.radius + radius2 * radius2) * n + 8.0f * obj.radius * obj.radius * p * q;
-//   	float e = o * o - 2.0f * (obj.radius * obj.radius + radius2 * radius2) * o + 4.0f * obj.radius * obj.radius * q * q + (obj.radius * obj.radius - radius2 * radius2) * (obj.radius * obj.radius - radius2 * radius2);
-  	
-// }
+	T2 < T ? T = T2 : 0;
+	T4 < T ? T = T4 : 0;
+	return ((float2)(T, INFINITY));
+}
 
+float2	intersect_ray_tetrahedron(float3 O, float3 D, t_obj obj)
+{
+	float3	A = obj.d;
+	float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float3	D = (float3){obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
+	float3	C = (A + B) / 2.0F;
+	C.y += obj.radius;
+	//front
+	float3	P1 = obj.c;
+	float3	P2 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T = intersect_ray_triangle(P1, P2, C, O, D);
+	//back
+	P1 = obj.d;
+	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	float T1 = intersect_ray_triangle(P1, P2, C, O, D);
+	T1 < T ? T = T1 : 0;
+	// //left
+	P1 = obj.d;
+	P2 = obj.c;
+	float T2 = intersect_ray_triangle(P1, P2, C, O, D);
+	// //right
+	P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
+	P2 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
+	float T3 = intersect_ray_triangle(P1, P2, C, O, D);
+	T3 < T2 ? T2 = T3 : 0;
+	// //down
+	P1 = obj.c;
+	P2 = obj.d;
+	float3	P3 = D;
+	float T4 = intersect_ray_triangle(P1, P2, P3, O, D);
 
-// float	intersect_ray_fract(float3 pos)
-// {
-// 	float3 z = pos;
-// 	float dr = 1.0f;
-// 	float r = 0.0f;
-// 	for (int i = 0; i < 4 ; i++) {
-// 		r = length(z);
-// 		if (r > 2.0f) break;
-
-// 		// convert to polar coordinates
-// 		float theta = acos(z.z/r);
-// 		float phi = atan2(z.y,z.x);
-// 		dr =  pow( r,  8.0f - 1.0f) * 8.0f * dr + 1.0f;
-
-// 		// scale and rotate the point
-// 		float zr = pow( r, 8.0f );
-// 		theta = theta * 8.0f ;
-// 		phi = phi * 8.0f ;
-
-// 		// convert back to cartesian coordinates
-// 		z = zr * (float3){sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta)};
-// 		z +=pos;
-// 	}
-// 	return 0.5f*log(r)*r/dr;
-// }
-
-// float	intersect_ray_fract(float3 pos)
-// {
-// 	float3 C = pos;
-// 	float res;
-// 	int i = -1;
-// 	while (++i < 4)
-// 	{
-// 		float	r = sqrt(dot(C,C));
-// 		float	theta = atan2(sqrt(C.y * C.y + C.x * C.x), C.z);
-// 		float	phi = atan2(C.y, C.x);
-// 		float	n = 5.0f;
-// 		float3	R;
-// 		R.x = pow(r, n) * sin(theta * n) * cos(phi * n);
-// 		R.y = pow(r, n) * sin(theta * n) * sin(phi * n);
-// 		R.z = pow(r, n) * cos(theta * n);
-
-// 		R = R + C;
-// 		res = sqrt(dot(R,R));
-// 		if (res > 1.0f)
-// 			break;
-// 	}
-// 	// printf("%.2f ", res);
-// 	return (res);
-// }
-
-// static float trace_fract(float3 from, float3 direction)
-// {
-// 	float totalDistance = 0.01f;
-// 	int steps;
-// 	float min_d = 0.0f;
-
-// 	for (steps = 0; steps < 10; steps++)
-// 	{
-// 		float3 p = from + totalDistance * direction;
-// 		float distance = intersect_ray_fract(p);
-// 		totalDistance += distance;
-// 		// min_d == 0.0f ? min_d = distance : 0;
-// 		// printf("%.2f ", distance);
-// 		if (distance < 0.003f * 0.75f)
-// 			break;
-// 		// distance < min_d ? min_d = distance : 0;
-// 	}
-// 	// printf("\n#\n");
-// 	// printf("***************** \n");
-// 	// printf("%d ", steps);
-// 	float res = 1.0f - float(steps) / float(10);
-// 	// printf("%.2f ", res );
-// 	return (res);
-// }
-
-// int	intersect_ray_fract(float3 O, float3 D, t_obj obj)
-// {
-// 	float		x = D.x;
-// 	float		y = D.y;
-// 	int			i = 0;
-// 	float		a[2] = {0, 0};
-// 	float		b = 0;
-
-// 	while ((a[0] * a[0] + b * b) < 4.0 && ++i < 128)
-// 	{
-// 		a[1] = a[0] * a[0] - b * b -0.75 + (x - obj.c.x + O.x) * 0.03;
-// 		b = 2 * a[0] * b + (y - obj.c.y + O.y) * 0.03;
-// 		a[0] = a[1];
-// 	}
-// 	return (parse_color_(i, 128));
-// }
+	T2 < T ? T = T2 : 0;
+	T4 < T ? T = T4 : 0;
+	return ((float2)(T, INFINITY));
+}
 
 /*
 **
@@ -778,11 +809,13 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 	i > 1.0f ? i = 1.0f : 0;
 	return (i);
 }
+
 /*
 **
 ***********************************MAIN*****************************************
 **
 */
+
 t_closest	intersections(t_scene scene, t_obj *obj)
 {
 	t_closest	closest;
@@ -812,14 +845,10 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_disc(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == CUBE)
 			t = intersect_ray_cube(scene.o, scene.d, obj[i]);
-		// else if (obj[i].name == TORUS)
-		// 	t = intersect_ray_torus(scene.o, scene.d, obj[i]);
-		// else if (obj[i].name == FRACT)
-		// {
-		// 	closest.closest_obj = obj[i];
-		// 	closest.closest_obj.color = trace_fract(scene.o, scene.d);
-		// 	return (closest);
-		// }
+		else if (obj[i].name == PIRAMID)
+			t = intersect_ray_piramid(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == TETRAHEDRON)
+			t = intersect_ray_tetrahedron(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -846,8 +875,6 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	while (deep >= 0)
 	{
 		closest = intersections(scene, obj);
-		if (closest.closest_obj.name == FRACT)
-			return (closest.closest_obj.color);
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;
