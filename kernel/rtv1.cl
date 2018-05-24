@@ -284,10 +284,14 @@ static float			fix_limits(float3 O, float3 D, float3 Va, t_obj obj, float ints)
 	float3	CT = {obj.d.x, obj.d.y, obj.d.z};
 
 	Q = O + D * ints;
-	if (Q.y < CT.y && obj.name == PARABOLID)
+	if (dot(Va, Q - CT) < 0 && obj.name == PARABOLID)
 		return (ints);
-	else if (Q.y > -(CT.y - C.y * 2.0F) && Q.y < CT.y && obj.name == HYPERBOLID)
-		return (ints);
+	else if (obj.name == HYPERBOLID)
+	{
+		float3 P = (C - CT) / fast_length(C - CT) * fast_length(CT - C) + C;
+		if (dot((P - C) / fast_length(P - C), Q - P) < 0 && dot(Va, Q - CT) < 0)
+			return (ints);
+	}
 	if (dot(Va, Q - C) > 0 && dot(Va, Q - CT) < 0)
 		return (ints);
 	return (INFINITY);
@@ -593,6 +597,24 @@ float2	intersect_ray_cube(float3 O, float3 D, t_obj obj)
 	return ((float2)(T, INFINITY));
 }
 
+// float2	intersect_ray_torus(float3 O, float3 D, t_obj obj)
+// {
+// 	float m = dot(D, D);
+// 	float n = dot(D, O - obj.c);
+// 	float o = dot(O - obj.c, O - obj.c);
+// 	float p = dot(D, obj.d - obj.c);
+// 	float q = dot(O - obj.c, obj.d - obj.c);
+
+// 	float radius2 = 5.0f;
+
+// 	float a = m * m;
+// 	float b = 4.0f * m * n;
+// 	float c = 4.0f * m * m + 2.0f * m * o - 2.0f * (obj.radius * obj.radius + radius2 * radius2) * m + 4.0f * obj.radius * obj.radius * p * p;
+//   	float d = 4.0f * n * o - 4.0f * (obj.radius * obj.radius + radius2 * radius2) * n + 8.0f * obj.radius * obj.radius * p * q;
+//   	float e = o * o - 2.0f * (obj.radius * obj.radius + radius2 * radius2) * o + 4.0f * obj.radius * obj.radius * q * q + (obj.radius * obj.radius - radius2 * radius2) * (obj.radius * obj.radius - radius2 * radius2);
+  	
+// }
+
 
 // float	intersect_ray_fract(float3 pos)
 // {
@@ -790,6 +812,8 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_disc(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == CUBE)
 			t = intersect_ray_cube(scene.o, scene.d, obj[i]);
+		// else if (obj[i].name == TORUS)
+		// 	t = intersect_ray_torus(scene.o, scene.d, obj[i]);
 		// else if (obj[i].name == FRACT)
 		// {
 		// 	closest.closest_obj = obj[i];
