@@ -298,33 +298,27 @@ float3	v_normal(float3 p, t_closest closest)
 		t_obj obj = closest.closest_obj;
 
 		float3	A = obj.d;
-		float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
-		float3	C = (A + B) / 2.0F;
-		C.y += obj.radius;
-
+		float3	B = obj.c;
+		float3	C = {obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
+		float3	T = { (A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f + obj.radius, (A.z + B.z + C.z) / 3.0f };
 		//front side
 		float3	P1 = obj.c;
-		float3	P3 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
-		N[0] = cross(P3 - P1, C - P1);
+		float3	P3 = C;
+		N[0] = cross(P3 - P1, T - P1);
 		NP[0] = dot(N[0], p - P1);
-		//back side
-		P1 = obj.d;
-		P3 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-		N[1] = cross(P3 - P1, C - P1);
-		NP[1] = dot(N[1], p - P1);
 		//left side
-		P1 = obj.c;
-		P3 = obj.d;
-		N[2] = cross(P3 - P1, C - P1);
+		P1 = obj.d;
+		P3 = obj.c;
+		N[2] = cross(P3 - P1, T - P1);
 		NP[2] = dot(N[2], p - P1);
 		//right side
-		P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-		P3 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
-		N[3] = cross(P3 - P1, C - P1);
+		P1 = obj.d;
+		P3 = C;
+		N[3] = cross(P3 - P1, T - P1);
 		NP[3] = dot(N[3], p - P1);
 		//down side
+		float3	P2 = C;
 		P1 = obj.c;
-		float3	P2 = (float3){obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
 		P3 = obj.d;
 		N[4] = cross(P3 - P1, P2 - P1);
 		NP[4] = dot(N[4], p - P1);
@@ -707,37 +701,29 @@ float2	intersect_ray_piramid(float3 O, float3 D, t_obj obj)
 float2	intersect_ray_tetrahedron(float3 O, float3 D, t_obj obj)
 {
 	float3	A = obj.d;
-	float3	B = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
-	float3	D = (float3){obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
-	float3	C = (A + B) / 2.0F;
-	C.y += obj.radius;
+	float3	B = obj.c;
+	float3	C = {obj.c.x + ((obj.d.x - obj.c.x) * 2.0f), obj.c.y, obj.c.z};
+	float3	T = { (A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f + obj.radius, (A.z + B.z + C.z) / 3.0f };
 	//front
 	float3	P1 = obj.c;
-	float3	P2 = {obj.c.x + obj.radius, obj.c.y, obj.c.z};
-	float T = intersect_ray_triangle(P1, P2, C, O, D);
-	//back
-	P1 = obj.d;
-	P2 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-	float T1 = intersect_ray_triangle(P1, P2, C, O, D);
-	T1 < T ? T = T1 : 0;
+	float3	P2 = C;
+	float T1 = intersect_ray_triangle(P1, P2, T, O, D);
 	// //left
 	P1 = obj.d;
 	P2 = obj.c;
-	float T2 = intersect_ray_triangle(P1, P2, C, O, D);
+	float T2 = intersect_ray_triangle(P1, P2, T, O, D);
+	T2 < T1 ? T1 = T2 : 0;
 	// //right
-	P1 = (float3){obj.d.x + obj.radius, obj.d.y, obj.d.z};
-	P2 = (float3){obj.c.x + obj.radius, obj.c.y, obj.c.z};
-	float T3 = intersect_ray_triangle(P1, P2, C, O, D);
-	T3 < T2 ? T2 = T3 : 0;
+	P2 = C;
+	float T3 = intersect_ray_triangle(P1, P2, T, O, D);
 	// //down
 	P1 = obj.c;
 	P2 = obj.d;
-	float3	P3 = D;
-	float T4 = intersect_ray_triangle(P1, P2, P3, O, D);
+	float T4 = intersect_ray_triangle(P1, P2, C, O, D);
+	T4 < T3 ? T3 = T4 : 0;
 
-	T2 < T ? T = T2 : 0;
-	T4 < T ? T = T4 : 0;
-	return ((float2)(T, INFINITY));
+	T3 < T1 ? T1 = T3 : 0;
+	return ((float2)(T1, INFINITY));
 }
 
 /*

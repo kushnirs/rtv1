@@ -12,7 +12,7 @@
 
 #include "rtv1.h"
 
-#define MAX_SOURCE_SIZE 25000
+#define MAX_SOURCE_SIZE 40000
 #define CL_BUILD_PROGRAM_FAILURE -11
 
 void		kernel_param(t_sdl *data)
