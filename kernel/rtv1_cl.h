@@ -27,6 +27,7 @@
 # define CUBE 9
 # define PIRAMID 10
 # define TETRAHEDRON 11
+# define TORUS 12
 
 # define POINT 1
 # define DIRECTION 2
