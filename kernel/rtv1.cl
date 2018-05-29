@@ -12,9 +12,7 @@
 
 #include "rtv1_cl.h"
 #include "complex.cl"
-
-#define	TwoPi  6.28318530717958648
-
+#include "solveP4.cl"
 
 /*
 **
@@ -94,8 +92,6 @@ static	void	convert_obj(__constant t_o *o, t_obj *obj, int num)
 		obj[num].c = (float3){o[num].c.x, o[num].c.y, o[num].c.z};
 		obj[num].d = (float3){o[num].d.x, o[num].d.y, o[num].d.z};
 		if (obj[num].name == PLANE)
-			obj[num].c = cam_rot(obj[num].d, obj[num].c);
-		if (obj[num].name == SPHERE)
 			obj[num].c = cam_rot(obj[num].d, obj[num].c);
 		obj[num].radius = o[num].radius;
 		obj[num].color = o[num].color;
@@ -178,7 +174,7 @@ float2	q_equation(float k[3])
 	return (t);
 }
 
-float3	v_normal(float3 p, t_closest closest)
+float3	v_normal(float3 p, float3 d, t_closest closest)
 {
 	float3		proj;
 	float3		t;
@@ -364,12 +360,14 @@ float3	v_normal(float3 p, t_closest closest)
 	}
 	else if (closest.closest_obj.name == TORUS)
 	{
-		// t_obj obj = closest.closest_obj; 
-		// n = (float3){4.0f * p.x * (dot(p, p) - obj.radius - 20.0f),
-  //       4.0f * p.y * (dot(p, p) - obj.radius - 20.0f),
-  //       4.0f * p.z * (dot(p, p) - obj.radius - 20.0f) + 8.0f * 20.0f * p.z};
-		n = p - closest.closest_obj.c;
-		return (fast_normalize(n));
+		t_obj	obj = closest.closest_obj;
+	
+		float3	V = (float3){0.0F, 0.0F, 1.0F};
+		float	k = dot(p - obj.c, V);
+		float3	A = p - V * k;
+		float	m = sqrt(obj.radius * obj.radius - k * k);
+		n = fast_normalize(p - A - (obj.c - A) * m / (60.0F + m));
+		return (n);
 	}
 	n = fast_normalize(n);
 	return (n);
@@ -740,289 +738,6 @@ float2	intersect_ray_tetrahedron(float3 O, float3 D, t_obj obj)
 	return ((float2)(T1, INFINITY));
 }
 
-//////////////TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_////////////////////
-
-static int   SolveP4Bi(double *x, double b, double d)	// solve equation x^4 + b*x^2 + d = 0
-{
-	double D = b * b - 4 * d;
-	if( D >= 0.0 ) 
-	{
-		double sD = sqrt(D);
-		double x1 = (-b + sD) / 2.0;
-		double x2 = (-b - sD) / 2.0;	// x2 <= x1
-		if( x2 >= 0 )				// 0 <= x2 <= x1, 4 real roots
-		{
-			double sx1 = sqrt(x1);
-			double sx2 = sqrt(x2);
-			x[0] = -sx1;
-			x[1] =  sx1;
-			x[2] = -sx2;
-			x[3] =  sx2;
-			return 4;
-		}
-		if( x1 < 0.0 )				// x2 <= x1 < 0, two pair of imaginary roots
-		{
-			double sx1 = sqrt(-x1);
-			double sx2 = sqrt(-x2);
-			x[0] =    0.0;
-			x[1] =  sx1;
-			x[2] =    0.0;
-			x[3] =  sx2;
-			return 0;
-		}
-		// now x2 < 0 <= x1 , two real roots and one pair of imginary root
-			double sx1 = sqrt( x1);
-			double sx2 = sqrt(-x2);
-			x[0] = -sx1;
-			x[1] =  sx1;
-			x[2] =    0.0;
-			x[3] =  sx2;
-			return 2;
-	}
-	else
-	{ // if( D < 0 ), two pair of compex roots
-		double sD2 = 0.5 * sqrt(-D);
-		float2 res = csqrt((float2){-0.5 * b, sD2});
-		x[0] = res.x;
-		x[1] = res.y;
-		res = csqrt((float2){-0.5 * b,-sD2});
-		x[2] = res.x;
-		x[3] = res.y;
-		return 0;
-	} // if( D>=0 ) 
-} // SolveP4Bi(double *x, double b, double d)	// solve equation x^4 + b*x^2 d
-
-static double _root3 ( double x )
-{
-    double s = 1.0;
-    while ( x < 1.0 )
-    {
-        x *= 8.0;
-        s *= 0.5;
-    }
-    while ( x > 8. )
-    {
-        x *= 0.125;
-        s *= 2.;
-    }
-    double r = 1.5;
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    r -= 1.0 / 3.0 * ( r - x / ( r * r ) );
-    return r * s;
-}
-
-static double root3 ( double x )
-{
-    if ( x > 0 )
-    	return _root3 ( x );
-    else
-    	if ( x < 0 )
-    		return -_root3 (-x);
-    	else
-    		return 0.0;
-}
-
-static int SolveP3(double *x,double a,double b,double c) {	// solve cubic equation x^3 + a*x^2 + b*x + c = 0
-	double a2 = a * a;
-    double q  = (a2 - 3.0 * b) / 9.0; 
-	double r  = (a * (2.0 * a2 - 9.0 * b) + 27.0 * c) / 54.0;
-	// equation x^3 + q * x + r = 0
-    double r2 = r * r;
-	double q3 = q * q * q;
-	double A,B;
-	if (r2 <= (q3 + 1e-14)) {//<<-- FIXED!
-		double t= r / sqrt(q3);
-		if( t < -1)
-			t = -1;
-		if( t > 1)
-			t = 1;
-        t = acos(t);
-        a /= 3.0;
-        q = -2.0 * sqrt(q);
-
-        x[0]=q * cos(t/3)-a;
-        x[1]=q * cos((t+TwoPi)/3)-a;
-        x[2]=q * cos((t-TwoPi)/3)-a;
-        return(3);
-    }
-    else {
-        //A =-pow(fabs(r)+sqrt(r2-q3),1./3); 
-        A = -root3(fabs(r) + sqrt(r2 - q3)); 
-		if( r < 0 )
-			A = -A;
-		B = A == 0.0 ? 0 : q/A;
-
-		a /= 3;
-		x[0] = (A + B) - a;
-        x[1] = -0.5 * (A + B) - a;
-        x[2] = 0.5 * sqrt(3.0) * (A - B);
-		if(fabs(x[2])<1e-14)
-			{
-				x[2]=x[1];
-				return(2);
-			}
-        return(1);
-    }
-}// SolveP3(double *x,double a,double b,double c) {	
-
-static void SWAP(double *a, double *b)
-{
-	double *t = b;
-	b = a;
-	a = t;
-}
-
-static void  dblSort3( double *a, double *b, double *c) // make: a <= b <= c
-{
-	if( a > b )
-		SWAP(a,b);	// now a<=b
-	if( c < b )
-	{
-		SWAP(b,c);			// now a<=b, b<=c
-		if( a > b )
-			SWAP(a, b);// now a<=b
-	}
-}
-
-static int   SolveP4De(double *x, double b, double c, double d)	// solve equation x^4 + b*x^2 + c*x + d
-{
-	//if( c==0 ) return SolveP4Bi(x,b,d); // After that, c!=0
-	if (fabs(c) < 1e-14 * (fabs(b) + fabs(d)))
-		return SolveP4Bi(x,b,d); // After that, c!=0
-
-	int res3 = SolveP3( x, 2 * b, b * b - 4 * d, -c * c);	// solve resolvent
-
-	// by Viet theorem:  x1*x2*x3=-c*c not equals to 0, so x1!=0, x2!=0, x3!=0
-	if( res3 > 1 )	// 3 real roots, 
-	{				
-		dblSort3(&x[0], &x[1], &x[2]);	// sort roots to x[0] <= x[1] <= x[2]
-		// Note: x[0]*x[1]*x[2]= c*c > 0
-		if( x[0] > 0.0) // all roots are positive
-		{
-			double sz1 = sqrt(x[0]);
-			double sz2 = sqrt(x[1]);
-			double sz3 = sqrt(x[2]);
-			// Note: sz1*sz2*sz3= -c (and not equal to 0)
-			if( c > 0.0 )
-			{
-				x[0] = (-sz1 -sz2 -sz3) / 2.0;
-				x[1] = (-sz1 +sz2 +sz3) / 2.0;
-				x[2] = (+sz1 -sz2 +sz3) / 2.0;
-				x[3] = (+sz1 +sz2 -sz3) / 2.0;
-				return 4;
-			}
-			// now: c<0
-			x[0] = (-sz1 -sz2 +sz3) / 2.0;
-			x[1] = (-sz1 +sz2 -sz3) / 2.0;
-			x[2] = (+sz1 -sz2 -sz3) / 2.0;
-			x[3] = (+sz1 +sz2 +sz3) / 2.0;
-			return 4;
-		} // if( x[0] > 0) // all roots are positive
-		// now x[0] <= x[1] < 0, x[2] > 0
-		// two pair of comlex roots
-		double sz1 = sqrt(-x[0]);
-		double sz2 = sqrt(-x[1]);
-		double sz3 = sqrt( x[2]);
-
-		if( c > 0 )	// sign = -1
-		{
-			x[0] = -sz3 / 2.0;					
-			x[1] = ( sz1 -sz2) / 2.0;		// x[0]±i*x[1]
-			x[2] =  sz3 / 2.0;
-			x[3] = (-sz1 -sz2) / 2.0;		// x[2]±i*x[3]
-			return 0;
-		}
-		// now: c<0 , sign = +1
-		x[0] =   sz3 / 2.0;
-		x[1] = (-sz1 +sz2) / 2.0;
-		x[2] =  -sz3 / 2.0;
-		x[3] = ( sz1 +sz2) / 2.0;
-		return 0;
-	} // if( res3>1 )	// 3 real roots, 
-	// now resoventa have 1 real and pair of compex roots
-	// x[0] - real root, and x[0]>0, 
-	// x[1]±i*x[2] - complex roots, 
-	// x[0] must be >=0. But one times x[0]=~ 1e-17, so:
-	if (x[0] < 0)
-		x[0] = 0;
-	double sz1 = sqrt(x[0]);
-	double szr, szi;
-	float2 res = csqrt((float2){x[1], x[2]}); // (szr+i*szi)^2 = x[1]+i*x[2]
-	szr = res.x;
-	szi = res.y;
-	if( c > 0 )	// sign = -1
-	{
-		x[0] = -sz1 / 2.0 - szr;			// 1st real root
-		x[1] = -sz1 / 2.0 + szr;			// 2nd real root
-		x[2] = sz1 / 2.0 ; 
-		x[3] = szi;
-		return 2;
-	}
-	// now: c<0 , sign = +1
-	x[0] = sz1 / 2.0 - szr;			// 1st real root
-	x[1] = sz1 / 2.0 + szr;			// 2nd real root
-	x[2] = -sz1 / 2.0 ;
-	x[3] = szi;
-	return 2;
-} // SolveP4De(double *x, double b, double c, double d)	// solve equation x^4 + b*x^2 + c*x + d
-
-//-----------------------------------------------------------------------------
-static double N4Step(double x, double a, double b, double c, double d)	// one Newton step for x^4 + a*x^3 + b*x^2 + c*x + d
-{
-	double fxs= ((4 * x + 3 * a) * x + 2 * b) * x + c;	// f'(x)
-	if (fxs == 0.0)
-		return x;	//return 1e99; <<-- FIXED!
-	double fx = (((x + a) * x + b) * x + c) * x + d;	// f(x)
-	return (x - fx / fxs);
-} 
-//-----------------------------------------------------------------------------
-// x - array of size 4
-// return 4: 4 real roots x[0], x[1], x[2], x[3], possible multiple roots
-// return 2: 2 real roots x[0], x[1] and complex x[2]±i*x[3], 
-// return 0: two pair of complex roots: x[0]±i*x[1],  x[2]±i*x[3], 
-static int   SolveP4(double *x, double a, double b, double c, double d)
-{	// solve equation x^4 + a*x^3 + b*x^2 + c*x + d by Dekart-Euler method
-	// move to a=0:
-	double d1 = d + 0.25 * a * ( 0.25 * b * a - 3.0 / 64.0 * a * a * a - c);
-	double c1 = c + 0.5 * a * (0.25 * a * a - b);
-	double b1 = b - 0.375 * a * a;
-	int res = SolveP4De( x, b1, c1, d1);
-	if( res == 4)
-		{
-			x[0]-= a/4;
-			x[1]-= a/4;
-			x[2]-= a/4;
-			x[3]-= a/4;
-		}
-	else if (res==2)
-		{
-			x[0]-= a/4;
-			x[1]-= a/4;
-			x[2]-= a/4;
-		}
-	else
-		{
-			x[0]-= a/4;
-			x[2]-= a/4;
-		}
-	// one Newton step for each real root:
-	if( res > 0 )
-	{
-		x[0] = N4Step(x[0], a,b,c,d);
-		x[1] = N4Step(x[1], a,b,c,d);
-	}
-	if( res > 2 )
-	{
-		x[2] = N4Step(x[2], a,b,c,d);
-		x[3] = N4Step(x[3], a,b,c,d);
-	}
-	return (res);
-}
-
 static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
 {
   // r1: cross section of torus
@@ -1031,35 +746,55 @@ static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
   // / r1  \------->r2<--------/    \
   // \_____/                   \____/
 
-  float r2 = pow(obj.radius, 2.0f);
-  float R2 = pow(20.0f, 2.0f);
+	// double3 O = {(double)OO.x, (double)OO.y, (double)OO.z};
+	// double3 Dir = {(double)D.x, (double)D.y, (double)D.z};
 
-  float3 OC = O - obj.c;
-  double a4 = pow(dot(Dir, Dir), 2.0f);
-  double a3 = 4.0 * dot(Dir, Dir) * dot(OC, Dir);
-  double a2 = 4.0 * pow(dot(OC, Dir), 2.0f) + 2.0 * dot(Dir, Dir) * (dot(OC, OC) - r2 - R2) + 4.0 * R2 * pow(Dir.z, 2.0f);
-  double a1 = 4.0 * dot(OC, Dir) * (dot(OC, OC) - r2 - R2) + 8.0 * R2 * OC.z * Dir.z;
-  double a0 = pow(dot(OC, OC) - r2 - R2, 2.0f) + 4.0 * R2 * pow(OC.z, 2.0f) - 4.0 * R2 * r2;
+	t_obj lox = obj;
+	lox.radius = 85.0f;
+	float2 sphere = raysphere(O, Dir, lox);
+	if (sphere.x == INFINITY && sphere.y == INFINITY)
+		return (sphere);
 
-  a3 /= a4; a2 /= a4; a1 /= a4; a0 /= a4;
+	float r2 = pow(obj.radius, 2.0F);
+	float R2 = pow(60.0F, 2.0F);
 
-  double roots[4];
-  int n_real_roots;
-  n_real_roots = SolveP4(roots, a3, a2, a1, a0);
+	float3 OC = O - obj.c;
+	float a4 = pow(dot(Dir, Dir), 2.0F);
+	float a3 = 4.0F * dot(Dir, Dir) * dot(OC, Dir);
+	float a2 = 4.0F * pow(dot(OC, Dir), 2.0F) + 2.0F * dot(Dir, Dir) * (dot(OC, OC) - r2 - R2) + 4.0F * R2 * pow(Dir.z, 2.0F);
+	float a1 = 4.0F * dot(OC, Dir) * (dot(OC, OC) - r2 - R2) + 8.0F * R2 * OC.z * Dir.z;
+	float a0 = pow(dot(OC, OC) - r2 - R2, 2.0F) + 4.0F * R2 * pow(OC.z, 2.0F) - 4.0F * R2 * r2;
 
-  if (!n_real_roots)
-  	return ((float2){INFINITY, INFINITY});
+	
 
-  double root = 0.0f;
-  for (int i = 0; i < n_real_roots; i++)
-  {
-    !i ? root = roots[i] : 0;
-    roots[i] < root ? root = roots[i] : 0;
-  }
-  return (root);
+	// double r2 = dsqr((double)obj.radius);
+	// double R2 = dsqr(60.0);
+	
+	// double a4 = dsqr(ddot(Dir, Dir));
+	// double a3 = 4.0 * ddot(Dir, Dir) * ddot(O, Dir);
+	// double a2 = 4.0 * dsqr(ddot(O, Dir)) + 2.0 * ddot(Dir, Dir) * (ddot(O, O) - r2 - R2)
+	//     + 4.0 * R2 * dsqr(Dir.z);
+	// double a1 = 4.0 * ddot(O, Dir) * (ddot(O, O) - r2 - R2) + 8.0 * R2 * O.z * Dir.z;
+	// double a0 = dsqr(ddot(O, O) - r2 - R2) + 4.0 * R2 * dsqr(O.z) - 4.0 * R2 * r2;
+
+	a3 /= a4; a2 /= a4; a1 /= a4; a0 /= a4;
+
+	float roots[4];
+	int n_real_roots;
+	n_real_roots = SolveP4(roots, a3, a2, a1, a0);
+
+	if (!n_real_roots)
+		return ((float2){INFINITY, INFINITY});
+
+	float root = 0.0f;
+	for (int i = 0; i < n_real_roots; i++)
+	{
+	  !i ? root = roots[i] : 0;
+	  roots[i] < root ? root = roots[i] : 0;
+	}
+	// printf("# %f %f #", root, (float)root);
+	return ((float2){(float)root, INFINITY});
 }
-
-//////////////TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_TORUS_////////////////////
 
 /*
 **
@@ -1201,7 +936,8 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;
-		n = v_normal(p, closest);
+		n = v_normal(p, scene.d, closest);
+		n *= dot(n, scene.d) > 0.0F ? -1.0F : 1.0F;
 		color[deep].color = parse_color(0, closest.closest_obj.color,
 			ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
 				light, obj, scene.n_o, scene.n_l));

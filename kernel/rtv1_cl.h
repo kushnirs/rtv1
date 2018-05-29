@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/22 18:16:17 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/05/29 16:02:34 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ typedef struct			s_s
 }						t_s;
 
 int						raytrace(t_scene scene, t_obj *obj, t_light *light);
-float3					v_normal(float3 p, t_closest closest);
+float3					v_normal(float3 p, float3 d, t_closest closest);
 t_closest				intersections(t_scene scene, t_obj *obj);
 float					ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l);
 float3					ft_light_p_d(float3 pnv, t_light light, t_obj *obj, int n_o, int n_l);
