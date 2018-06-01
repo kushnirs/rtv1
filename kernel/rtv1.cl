@@ -13,6 +13,7 @@
 #include "rtv1_cl.h"
 #include "complex.cl"
 #include "solveP4.cl"
+#include "mandelbulb.cl"
 
 /*
 **
@@ -907,6 +908,8 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_tetrahedron(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == TORUS)
 			t = intersect_ray_torus(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == MANDELBULB)
+			t = intersect_ray_mandelbulb(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -933,6 +936,8 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	while (deep >= 0)
 	{
 		closest = intersections(scene, obj);
+		if (closest.closest_obj.name == MANDELBULB)
+				return (closest.c_t * closest.closest_obj.color);
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;

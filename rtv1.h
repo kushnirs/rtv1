@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rtv1.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/28 18:30:17 by skushnir          #+#    #+#             */
-/*   Updated: 2018/05/29 18:10:44 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/01 12:10:26 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 # define PIRAMID 10
 # define TETRAHEDRON 11
 # define TORUS 12
+# define MANDELBULB 13
 
 # define POINT 1
 # define DIRECTION 2
@@ -81,12 +82,6 @@ typedef struct			s_light
 	float				intensity;
 	t_point				direction;
 }						t_light;
-
-typedef struct			s_closest
-{
-	t_obj				*closest_obj;
-	float				c_t;
-}						t_closest;
 
 typedef struct			s_scene
 {

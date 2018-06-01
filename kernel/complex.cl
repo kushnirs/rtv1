@@ -23,21 +23,21 @@ inline float cmod(float2 a){
  * Get the argument of a complex number (its angle):
  * http://en.wikipedia.org/wiki/Complex_number#Absolute_value_and_argument
  */
-inline float carg(float2 a){
+inline float carg_g(float2 a){
     if(a.x > 0){
         return atan(a.y / a.x);
 
     }else if(a.x < 0 && a.y >= 0){
-        return atan(a.y / a.x) + M_PI;
+        return atan(a.y / a.x) + PI;
 
     }else if(a.x < 0 && a.y < 0){
-        return atan(a.y / a.x) - M_PI;
+        return atan(a.y / a.x) - PI;
 
     }else if(a.x == 0 && a.y > 0){
-        return M_PI/2;
+        return PI/2;
 
     }else if(a.x == 0 && a.y < 0){
-        return -M_PI/2;
+        return -PI/2;
 
     }else{
         return 0;
@@ -86,6 +86,6 @@ inline float2 cdiv(float2 a, float2 b){
  *  for more info: 
  *  http://en.wikipedia.org/wiki/Square_root#Principal_square_root_of_a_complex_number
  */
- inline float2 csqrt(float2 a){
-     return (float2)( sqrt(cmod(a)) * cos(carg(a)/2),  sqrt(cmod(a)) * sin(carg(a)/2));
+ inline float2 csqrt_t(float2 a){
+     return (float2)( sqrt(cmod(a)) * cos(carg_g(a)/2),  sqrt(cmod(a)) * sin(carg_g(a)/2));
  }
