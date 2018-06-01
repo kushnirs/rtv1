@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   opencl.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 10:14:49 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/10 13:08:08 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/01 11:58:17 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@ void		kernel_param(t_sdl *data)
 	cl_int ret;
 
 	(ret = clSetKernelArg(data->host.kernel, 0, sizeof(cl_mem),
-	(void *)&data->host.memobj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	&data->host.memobj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 1, sizeof(t_scene),
-		(void *)&data->scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+		&data->scene)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 2, sizeof(cl_mem),
-	(void *)&data->host.obj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	&data->host.obj)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	(ret = clSetKernelArg(data->host.kernel, 3, sizeof(cl_mem),
-	(void *)&data->host.light)) ? exit(ft_printf("Can't set parameter\n")) : 0;
+	&data->host.light)) ? exit(ft_printf("Can't set parameter\n")) : 0;
 	ret = clEnqueueNDRangeKernel(data->host.com_queue, data->host.kernel,
 		2, NULL, (size_t[3]){data->surface->w, data->surface->h, 0},
 		NULL, 0, NULL, NULL);

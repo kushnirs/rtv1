@@ -39,10 +39,10 @@ inline int   SolveP4Bi(float *x, float b, float d)
 	else
 	{
 		float sD2 = 0.5F * sqrt(-D);
-		float2 res = csqrt((float2){-0.5F * b, sD2});
+		float2 res = csqrt_t((float2){-0.5F * b, sD2});
 		x[0] = res.x;
 		x[1] = res.y;
-		res = csqrt((float2){-0.5F * b,-sD2});
+		res = csqrt_t((float2){-0.5F * b,-sD2});
 		x[2] = res.x;
 		x[3] = res.y;
 		return (0);
@@ -200,7 +200,7 @@ inline int   SolveP4De(float *x, float b, float c, float d)
 		x[0] = 0.0F;
 	float sz1 = sqrt(x[0]);
 	float szr, szi;
-	float2 res = csqrt((float2){x[1], x[2]});
+	float2 res = csqrt_t((float2){x[1], x[2]});
 	szr = res.x;
 	szi = res.y;
 	if( c > 0 )
@@ -310,10 +310,10 @@ inline int   SolveP4(float *x, float a, float b, float c, float d)
 // 	else
 // 	{
 // 		double sD2 = 0.5 * sqrt(-D);
-// 		double2 res = csqrt((double2){-0.5 * b, sD2});
+// 		double2 res = csqrt_t((double2){-0.5 * b, sD2});
 // 		x[0] = res.x;
 // 		x[1] = res.y;
-// 		res = csqrt((double2){-0.5 * b,-sD2});
+// 		res = csqrt_t((double2){-0.5 * b,-sD2});
 // 		x[2] = res.x;
 // 		x[3] = res.y;
 // 		return (0);
@@ -471,7 +471,7 @@ inline int   SolveP4(float *x, float a, float b, float c, float d)
 // 		x[0] = 0.0;
 // 	double sz1 = sqrt(x[0]);
 // 	double szr, szi;
-// 	double2 res = csqrt((double2){x[1], x[2]});
+// 	double2 res = csqrt_t((double2){x[1], x[2]});
 // 	szr = res.x;
 // 	szi = res.y;
 // 	if( c > 0 )

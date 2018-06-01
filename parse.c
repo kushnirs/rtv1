@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/19 15:13:38 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/05 10:24:14 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/01 10:30:52 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,10 @@ static void	parse_scene(char *line, t_scene *scene)
 	i += check_coord(&line[i], &scene->canvas);
 	line[i] != '}' || line[i + 1] != 0 ?
 		exit(ft_printf("missing parameter /0\n")) : 0;
-	scene->d = (t_point){0, 0, 0};
+	scene->d = (cl_float3){{0, 0, 0}};
 	scene->t_min = 1;
 	scene->t_max = INFINITY;
-	scene->viewport = (t_point){100, 100, 0};
+	scene->viewport = (cl_float3){{100, 100, 0}};
 }
 
 static void	read_param(char *filename, t_sdl *data, int *num, int fd)

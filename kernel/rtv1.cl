@@ -14,6 +14,7 @@
 #include "complex.cl"
 #include "solveP4.cl"
 
+
 /*
 **
 ***********************************COLOR****************************************
@@ -79,58 +80,13 @@ static int		parse_color_(int c1, unsigned int it)
 	db = 8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255;
 	return (dr * 0x10000 + dg * 0x100 + db);
 }
-/*
-**
-***********************************CONVERT**************************************
-**
-*/
-static	void	convert_obj(__constant t_o *o, t_obj *obj, int num)
-{
-	while (num--)
-	{
-		obj[num].name = o[num].name;
-		obj[num].c = (float3){o[num].c.x, o[num].c.y, o[num].c.z};
-		obj[num].d = (float3){o[num].d.x, o[num].d.y, o[num].d.z};
-		if (obj[num].name == PLANE)
-			obj[num].c = cam_rot(obj[num].d, obj[num].c);
-		obj[num].radius = o[num].radius;
-		obj[num].color = o[num].color;
-		obj[num].specular = o[num].specular;
-		obj[num].reflection = o[num].reflection;
-	}
-}
 
-static	void	convert_light(__constant t_l *l, t_light *light, int num)
-{
-	while (num--)
-	{
-		light[num].type = l[num].type;
-		light[num].intensity = l[num].intensity;
-		light[num].direction = (float3){l[num].direction.x,
-			l[num].direction.y, l[num].direction.z};
-	}
-}
-
-static	t_scene	convert_scene(t_s s)
-{
-	t_scene scene;
-
-	scene.o = (float3){s.o.x, s.o.y, s.o.z};
-	scene.d = (float3){s.d.x, s.d.y, s.d.z};
-	scene.cam_rot = (float3){s.cam_rot.x, s.cam_rot.y, s.cam_rot.z};
-	scene.canvas = (float3){s.canvas.x, s.canvas.y, s.canvas.z};
-	scene.viewport = (float3){s.viewport.x, s.viewport.y, s.viewport.z};
-	scene.t_min = s.t_min;
-	scene.t_max = s.t_max;
-	scene.n_o = s.n_o;
-	scene.n_l = s.n_l;
-	return (scene);
-}
 /*
 **
 ***********************************UTILITY**************************************
 **
 */
+
 float3	cam_rot(float3 rot, float3 coord)
 {
 	float3	angle;
@@ -412,7 +368,7 @@ float2	raysphere(float3 o, float3 d, t_obj obj)
 	return (t);
 }
 
-float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
+static float intersect_cyl_con(float3 d, float3 o, float3 v, t_obj obj, float t)
 {
 	float3	p;
 	float3	a;
@@ -820,7 +776,7 @@ float	ft_p_d(float3 l, float3 n, float3 v, int s, float intens)
 	return (i);
 }
 
-float3	ft_light_p_d(float3 p, t_light light, t_obj *obj, int n_o, int n_l)
+float3	ft_light_p_d(float3 p, t_light light, __constant t_obj *obj, int n_o, int n_l)
 {
 	t_closest	closest;
 	float		max;
@@ -836,14 +792,14 @@ float3	ft_light_p_d(float3 p, t_light light, t_obj *obj, int n_o, int n_l)
 		l = light.direction;
 		max = INFINITY;
 	}
-	closest = intersections((t_scene){p, l, (float3){0,0,0}, (float3){0,0,0},
-		(float3){0,0,0}, 0.001f, max, n_o, n_l}, obj);
+	closest = intersections((t_scene){n_o, n_l, 0.001f, max, p, l, (float3){0,0,0}, (float3){0,0,0},
+		(float3){0,0,0}}, obj);
 	if (closest.closest_obj.color)
 		return ((float3){INFINITY, INFINITY, 0});
 	return (l);
 }
 
-float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
+float	ft_light(float3 *pnv, int s, __constant t_light *light, __constant  t_obj *obj, int n_o, int n_l)
 {
 	int			a;
 	float		i;
@@ -872,7 +828,7 @@ float	ft_light(float3 *pnv, int s, t_light *light, t_obj *obj, int n_o, int n_l)
 **
 */
 
-t_closest	intersections(t_scene scene, t_obj *obj)
+t_closest	intersections(t_scene scene, __constant t_obj *obj)
 {
 	t_closest	closest;
 	float2		t;
@@ -921,7 +877,7 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 	return (closest);
 }
 
-int	raytrace(t_scene scene, t_obj *obj, t_light *light)
+int	raytrace(t_scene scene, __constant t_obj *obj, __constant t_light *light)
 {
 	t_color		color[DEEP + 1];
 	t_closest	closest;
@@ -930,34 +886,34 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	float3		r;
 	int			deep = DEEP;
 
-	while (deep >= 0)
-	{
+	// while (deep >= 0)
+	// {
 		closest = intersections(scene, obj);
 		if (!closest.closest_obj.color)
 			return (0);
-		p = scene.o + scene.d * closest.c_t;
-		n = v_normal(p, scene.d, closest);
-		n *= dot(n, scene.d) > 0.0F ? -1.0F : 1.0F;
-		color[deep].color = parse_color(0, closest.closest_obj.color,
-			ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
-				light, obj, scene.n_o, scene.n_l));
-		color[deep].reflection = closest.closest_obj.reflection;
-		if (deep > 0 && closest.closest_obj.reflection > 0)
-		{
-			r = 2.0f * n * dot(n, -scene.d) - -scene.d;
-			scene = (t_scene){p, r, scene.cam_rot, scene.canvas, scene.viewport,
-				0.001f, INFINITY, scene.n_o, scene.n_l};
-			deep--;
-		}
-		else
-			break;
-	}
-	DEEP ? color[DEEP].color = refl_color(color, DEEP) : 0;
-	return (color[DEEP].color);
+		// p = scene.o + scene.d * closest.c_t;
+		// n = v_normal(p, scene.d, closest);
+		// n *= dot(n, scene.d) > 0.0F ? -1.0F : 1.0F;
+		// color[deep].color = parse_color(0, closest.closest_obj.color,
+		// 	ft_light((float3[3]){p, n, -scene.d}, closest.closest_obj.specular,
+		// 		light, obj, scene.n_o, scene.n_l));
+		// color[deep].reflection = closest.closest_obj.reflection;
+	// 	if (deep > 0 && closest.closest_obj.reflection > 0)
+	// 	{
+	// 		r = 2.0f * n * dot(n, -scene.d) - -scene.d;
+	// 		scene = (t_scene){scene.n_o, scene.n_l, 0.001f, INFINITY, p, r, scene.cam_rot, scene.canvas, scene.viewport};
+	// 		deep--;
+	// 	}
+	// 	else
+	// 		break;
+	// }
+	// DEEP ? color[DEEP].color = refl_color(color, DEEP) : 0;
+	// return (color[DEEP].color);
+	return (closest.closest_obj.color);
 }
 
 __kernel
-void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
+void	draw_scene(__global int *buff, t_scene scene, __constant t_obj *obj, __constant t_light *light)
 {
 	int			x = get_global_id(0);
 	int			y = get_global_id(1);
@@ -966,13 +922,6 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 	int			col;
 	int			color[4];
 	int			smooth;
-	t_scene		scene;
-	t_light		light[20];
-	t_obj		obj[20];
-
-	scene = convert_scene(s);
-	convert_obj(o, obj, scene.n_o);
-	convert_light(l, light, scene.n_l);
 
 	smooth = 1;
 	i = 0;
@@ -985,7 +934,7 @@ void	draw_scene(__global int *buff, t_s s, __constant t_o *o, __constant t_l *l)
 			scene.d = (float3){(x - scene.canvas.x / 2.0f + (row + 0.5f) / smooth)
 				* scene.viewport.x / scene.canvas.x,
 			(scene.canvas.y / 2.0f - y + (col + 0.5f) / smooth)
-				* scene.viewport.y / scene.canvas.y, 100};
+				* scene.viewport.y / scene.canvas.y, 100.0f};
 			scene.d = cam_rot(scene.cam_rot, scene.d);
 			color[i++] = raytrace(scene, obj, light);
 		}

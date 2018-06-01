@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sergee <sergee@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/28 21:02:22 by sergee            #+#    #+#             */
-/*   Updated: 2018/03/02 12:14:38 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/01 10:24:33 by sergee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	check_float(char *str, float *res)
 	return (i + 1);
 }
 
-int	check_coord(char *str, t_point *res)
+int	check_coord(char *str, cl_float3 *res)
 {
 	int		i;
 
