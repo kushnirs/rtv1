@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/05/29 16:02:34 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/05 18:11:13 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # define PIRAMID 10
 # define TETRAHEDRON 11
 # define TORUS 12
+# define MEBIUS 13
 
 # define POINT 1
 # define DIRECTION 2

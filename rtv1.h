@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/28 18:30:17 by skushnir          #+#    #+#             */
-/*   Updated: 2018/05/29 18:10:44 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/05 18:18:25 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include "SDL_ttf.h"
 # include "ft_printf.h"
 
-# define DEVICE_TYPE CL_DEVICE_TYPE_GPU
+# define DEVICE_TYPE CL_DEVICE_TYPE_CPU
 # define B_SIZE	10000
 # define S 0
 # define L 2
@@ -36,6 +36,7 @@
 # define PIRAMID 10
 # define TETRAHEDRON 11
 # define TORUS 12
+# define MEBIUS 13
 
 # define POINT 1
 # define DIRECTION 2

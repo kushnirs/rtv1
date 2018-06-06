@@ -14,6 +14,8 @@
 #include "complex.cl"
 #include "solveP4.cl"
 
+#define EPSILON 1.19e-07
+
 /*
 **
 ***********************************COLOR****************************************
@@ -362,12 +364,21 @@ float3	v_normal(float3 p, float3 d, t_closest closest)
 	{
 		t_obj	obj = closest.closest_obj;
 	
-		float3	V = (float3){0.0F, 0.0F, 1.0F};
+		// float3	V = fast_normalize(obj.d - obj.c);
+		float3	V = (float3){0.0f, 0.0f, 1.0f};
 		float	k = dot(p - obj.c, V);
 		float3	A = p - V * k;
 		float	m = sqrt(obj.radius * obj.radius - k * k);
 		n = fast_normalize(p - A - (obj.c - A) * m / (60.0F + m));
 		return (n);
+	}
+	else if (closest.closest_obj.name == MEBIUS)
+	{
+		t_obj	obj = closest.closest_obj;
+		n =  (float3){2.0f * p.x * p.y - 2.0f * obj.radius * p.z - 4.0f * p.x * p.z,
+			-obj.radius * obj.radius + p.x * p.x + 3.0f * p.y * p.y - 4.0f * p.y * p.z + p.z * p.z,
+			-2.0f * obj.radius * p.x - 2.0f * p.x * p.x - 2.0f * p.y * p.y + 2.0f * p.y * p.z};
+		return (fast_normalize(n));
 	}
 	n = fast_normalize(n);
 	return (n);
@@ -740,15 +751,6 @@ float2	intersect_ray_tetrahedron(float3 O, float3 D, t_obj obj)
 
 static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
 {
-  // r1: cross section of torus
-  // r2: the ring's radius
-  //  _____                     ____
-  // / r1  \------->r2<--------/    \
-  // \_____/                   \____/
-
-	// double3 O = {(double)OO.x, (double)OO.y, (double)OO.z};
-	// double3 Dir = {(double)D.x, (double)D.y, (double)D.z};
-
 	t_obj lox = obj;
 	lox.radius = 85.0f;
 	float2 sphere = raysphere(O, Dir, lox);
@@ -759,23 +761,14 @@ static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
 	float R2 = pow(60.0F, 2.0F);
 
 	float3 OC = O - obj.c;
-	float a4 = pow(dot(Dir, Dir), 2.0F);
-	float a3 = 4.0F * dot(Dir, Dir) * dot(OC, Dir);
-	float a2 = 4.0F * pow(dot(OC, Dir), 2.0F) + 2.0F * dot(Dir, Dir) * (dot(OC, OC) - r2 - R2) + 4.0F * R2 * pow(Dir.z, 2.0F);
-	float a1 = 4.0F * dot(OC, Dir) * (dot(OC, OC) - r2 - R2) + 8.0F * R2 * OC.z * Dir.z;
-	float a0 = pow(dot(OC, OC) - r2 - R2, 2.0F) + 4.0F * R2 * pow(OC.z, 2.0F) - 4.0F * R2 * r2;
-
-	
-
-	// double r2 = dsqr((double)obj.radius);
-	// double R2 = dsqr(60.0);
-	
-	// double a4 = dsqr(ddot(Dir, Dir));
-	// double a3 = 4.0 * ddot(Dir, Dir) * ddot(O, Dir);
-	// double a2 = 4.0 * dsqr(ddot(O, Dir)) + 2.0 * ddot(Dir, Dir) * (ddot(O, O) - r2 - R2)
-	//     + 4.0 * R2 * dsqr(Dir.z);
-	// double a1 = 4.0 * ddot(O, Dir) * (ddot(O, O) - r2 - R2) + 8.0 * R2 * O.z * Dir.z;
-	// double a0 = dsqr(ddot(O, O) - r2 - R2) + 4.0 * R2 * dsqr(O.z) - 4.0 * R2 * r2;
+	float m = dot(Dir, Dir);
+	float n = dot(OC, Dir);
+	float o = dot(OC, OC);
+	float a4 = m * m;
+	float a3 = 4.0F * m * n;
+	float a2 = 4.0F * n * n + 2.0F * m * (o - r2 - R2) + 4.0F * R2 * Dir.z * Dir.z;
+	float a1 = 4.0F * n * (o - r2 - R2) + 8.0F * R2 * OC.z * Dir.z;
+	float a0 = pow(o - r2 - R2, 2.0F) + 4.0F * R2 * OC.z * OC.z - 4.0F * R2 * r2;
 
 	a3 /= a4; a2 /= a4; a1 /= a4; a0 /= a4;
 
@@ -792,8 +785,70 @@ static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
 	  !i ? root = roots[i] : 0;
 	  roots[i] < root ? root = roots[i] : 0;
 	}
-	// printf("# %f %f #", root, (float)root);
-	return ((float2){(float)root, INFINITY});
+	return ((float2){root, INFINITY});
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static int dblsgn(float x)
+{
+	if (x < -1.0F)
+		return (-1);
+	return (x > 1.0F);
+}
+
+static bool inside(float3 pt, t_obj obj)
+{
+	float t = atan2(pt.y, pt.x);
+	float s;
+
+	if (dblsgn(sin(t / 2.0)))
+		s = pt.z / sin(t / 2.0);
+	else
+	{
+		if (dblsgn(cos(t)))
+			s = (pt.x / cos(t) - obj.radius) / cos(t / 2.0);
+		else
+			s = (pt.y / sin(t) - obj.radius) / cos(t / 2.0);
+	}
+	pt.x -= (obj.radius + s * cos(t / 2.0)) * cos(t);
+	pt.y -= (obj.radius + s * cos(t / 2.0)) * sin(t);
+	pt.z -= s * sin(t / 2.0);
+
+	if (dblsgn(dot(pt, pt)))
+		return false;
+	return (s >= -15.0  && s <= 15.0);
+}
+
+static float2 intersect_ray_mebius(float3 O, float3 D, t_obj obj)
+{
+ 	float ox = O.x;
+	float oy = O.y;
+	float oz = O.z;
+	float dx = D.x;
+	float dy = D.y;
+	float dz = D.z;
+	float R = obj.radius;
+
+	float a1 = ox * ox * oy + oy * oy * oy - 2.0 * ox * ox * oz - 2.0 * oy * oy * oz + oy * oz * oz - 2.0 * ox * oz * R - oy * R * R;
+	float a2 = dy * ox * ox - 2.0 * dz * ox * ox + 2.0 * dx * ox * oy + 3.0 * dy * oy * oy - 2.0 * dz * oy * oy - 4.0 * dx * ox * oz - 4.0 * dy * oy * oz + 2.0 * dz * oy * oz + dy * oz * oz - 2.0 * dz * ox * R - 2.0 * dx * oz * R - dy * R * R;
+	float a3 = 2.0 * dx * dy * ox - 4.0 * dx * dz * ox + dx * dx * oy + 3.0 * dy * dy * oy - 4.0 * dy * dz * oy + dz * dz * oy - 2.0 * dx * dx * oz - 2.0 * dy * dy * oz + 2.0 * dy * dz * oz - 2.0 * dx * dz * R;
+	float a4 = dx * dx * dy + dy * dy * dy - 2.0 * dx * dx * dz - 2.0 * dy * dy * dz + dy * dz * dz;
+
+	float roots[3];
+	int n_real_roots = 0;
+	a3 /= a4; a2 /= a4; a1 /= a4;
+	n_real_roots = SolveP3(roots, a3, a2, a1);
+	// printf("____START_____\n%.12f; %.12f; %.12f\n%.12f; %.12f; %.12f\n____END_____\n", a3, a2, a1, roots[0], roots[1], roots[2]);
+
+	if (!n_real_roots)
+		return ((float2){INFINITY, INFINITY});
+
+	float root = 0.0f;
+	for (int i = 0; i < n_real_roots; i++)
+	{
+	 	if (roots[i] > DBL_EPSILON && inside(O + D * (float)roots[i], obj))
+			return ((float2){roots[i], INFINITY});
+	}
+	return ((float2){INFINITY, INFINITY});
 }
 
 /*
@@ -907,6 +962,8 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_tetrahedron(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == TORUS)
 			t = intersect_ray_torus(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == MEBIUS)
+			t = intersect_ray_mebius(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
