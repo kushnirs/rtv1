@@ -13,6 +13,7 @@
 #include "rtv1_cl.h"
 #include "complex.cl"
 #include "solveP4.cl"
+#include "mandelbulb.cl"
 
 #define EPSILON 1.19e-07
 
@@ -296,8 +297,8 @@ float3	v_normal(float3 p, float3 d, t_closest closest)
 	}
 	else if (closest.closest_obj.name == TETRAHEDRON)
 	{
-		float3 N[5];
-		float NP[5];
+		float3 N[4];
+		float NP[4];
 		t_obj obj = closest.closest_obj;
 
 		float3	A = obj.d;
@@ -312,22 +313,22 @@ float3	v_normal(float3 p, float3 d, t_closest closest)
 		//left side
 		P1 = obj.d;
 		P3 = obj.c;
-		N[2] = cross(P3 - P1, T - P1);
-		NP[2] = dot(N[2], p - P1);
+		N[1] = cross(P3 - P1, T - P1);
+		NP[1] = dot(N[1], p - P1);
 		//right side
 		P1 = obj.d;
 		P3 = C;
-		N[3] = cross(P3 - P1, T - P1);
-		NP[3] = dot(N[3], p - P1);
+		N[2] = cross(P3 - P1, T - P1);
+		NP[2] = dot(N[2], p - P1);
 		//down side
 		float3	P2 = C;
 		P1 = obj.c;
 		P3 = obj.d;
-		N[4] = cross(P3 - P1, P2 - P1);
-		NP[4] = dot(N[4], p - P1);
+		N[3] = cross(P3 - P1, P2 - P1);
+		NP[3] = dot(N[3], p - P1);
 
 		int i  = -1;
-		while (++i < 5)
+		while (++i < 4)
 			if (NP[i] < 5.0F && NP[i] > -5.0f)
 				break;
 		n = fast_normalize(N[i]);
@@ -364,8 +365,7 @@ float3	v_normal(float3 p, float3 d, t_closest closest)
 	{
 		t_obj	obj = closest.closest_obj;
 	
-		// float3	V = fast_normalize(obj.d - obj.c);
-		float3	V = (float3){0.0f, 0.0f, 1.0f};
+		float3	V = fast_normalize(obj.d);
 		float	k = dot(p - obj.c, V);
 		float3	A = p - V * k;
 		float	m = sqrt(obj.radius * obj.radius - k * k);
@@ -378,10 +378,8 @@ float3	v_normal(float3 p, float3 d, t_closest closest)
 		n =  (float3){2.0f * p.x * p.y - 2.0f * obj.radius * p.z - 4.0f * p.x * p.z,
 			-obj.radius * obj.radius + p.x * p.x + 3.0f * p.y * p.y - 4.0f * p.y * p.z + p.z * p.z,
 			-2.0f * obj.radius * p.x - 2.0f * p.x * p.x - 2.0f * p.y * p.y + 2.0f * p.y * p.z};
-		return (fast_normalize(n));
 	}
-	n = fast_normalize(n);
-	return (n);
+	return (fast_normalize(n));
 }
 
 static float			fix_limits(float3 O, float3 D, float3 Va, t_obj obj, float ints)
@@ -764,11 +762,13 @@ static float2 intersect_ray_torus(float3 O, float3 Dir, t_obj obj)
 	float m = dot(Dir, Dir);
 	float n = dot(OC, Dir);
 	float o = dot(OC, OC);
+	float p = dot(Dir, fast_normalize(obj.d));
+	float q = dot(OC, fast_normalize(obj.d));
 	float a4 = m * m;
 	float a3 = 4.0F * m * n;
-	float a2 = 4.0F * n * n + 2.0F * m * (o - r2 - R2) + 4.0F * R2 * Dir.z * Dir.z;
-	float a1 = 4.0F * n * (o - r2 - R2) + 8.0F * R2 * OC.z * Dir.z;
-	float a0 = pow(o - r2 - R2, 2.0F) + 4.0F * R2 * OC.z * OC.z - 4.0F * R2 * r2;
+	float a2 = 4.0F * n * n + 2.0F * m * (o - r2 - R2) + 4.0F * R2 * p * p;
+	float a1 = 4.0F * n * (o - r2 - R2) + 8.0F * R2 * p * q;
+	float a0 = pow(o - r2 - R2, 2.0F) + 4.0F * R2 * q * q - 4.0F * R2 * r2;
 
 	a3 /= a4; a2 /= a4; a1 /= a4; a0 /= a4;
 
@@ -964,6 +964,8 @@ t_closest	intersections(t_scene scene, t_obj *obj)
 			t = intersect_ray_torus(scene.o, scene.d, obj[i]);
 		else if (obj[i].name == MEBIUS)
 			t = intersect_ray_mebius(scene.o, scene.d, obj[i]);
+		else if (obj[i].name == MANDELBULB)
+			t = intersect_ray_mandelbulb(scene.o, scene.d, obj[i]);
 		if (t.x > scene.t_min && t.x < scene.t_max && t.x < closest.c_t)
 		{
 			closest.c_t = t.x;
@@ -990,6 +992,8 @@ int	raytrace(t_scene scene, t_obj *obj, t_light *light)
 	while (deep >= 0)
 	{
 		closest = intersections(scene, obj);
+		if (closest.closest_obj.name == MANDELBULB)
+				return (closest.c_t * closest.closest_obj.color);
 		if (!closest.closest_obj.color)
 			return (0);
 		p = scene.o + scene.d * closest.c_t;

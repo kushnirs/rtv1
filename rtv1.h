@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/28 18:30:17 by skushnir          #+#    #+#             */
-/*   Updated: 2018/06/05 18:18:25 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/07 17:50:39 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 # define TETRAHEDRON 11
 # define TORUS 12
 # define MEBIUS 13
+# define MANDELBULB 14
 
 # define POINT 1
 # define DIRECTION 2
@@ -82,12 +83,6 @@ typedef struct			s_light
 	float				intensity;
 	t_point				direction;
 }						t_light;
-
-typedef struct			s_closest
-{
-	t_obj				*closest_obj;
-	float				c_t;
-}						t_closest;
 
 typedef struct			s_scene
 {

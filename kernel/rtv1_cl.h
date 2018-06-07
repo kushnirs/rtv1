@@ -6,7 +6,7 @@
 /*   By: skushnir <skushnir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/16 12:14:12 by sergee            #+#    #+#             */
-/*   Updated: 2018/06/05 18:11:13 by skushnir         ###   ########.fr       */
+/*   Updated: 2018/06/07 17:48:57 by skushnir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 # define TETRAHEDRON 11
 # define TORUS 12
 # define MEBIUS 13
+# define MANDELBULB 14
 
 # define POINT 1
 # define DIRECTION 2
@@ -139,6 +140,7 @@ float2					intersect_ray_disc(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_cube(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_piramid(float3 O, float3 D, t_obj obj);
 float2					intersect_ray_tetrahedron(float3 O, float3 D, t_obj obj);
+float2					intersect_ray_mandelbulb(float3 O, float3 D, t_obj obj);
 float2					raycylinder(float3 o, float3 d, t_obj obj);
 float2					raycone(float3 o, float3 d, t_obj obj);
 float2					rayplane(float3 o, float3 d, t_obj obj);
